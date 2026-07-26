@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 950" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="fa" markerWidth="11" markerHeight="9" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 z" fill="#93402f"/>
+    </marker>
+  </defs>
+  <rect width="940" height="950" fill="#ffffff"/>
+  <text x="470" y="32" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">DocVerify — Workflow</text>
+
+  <!-- ===== LEFT GROUP: security pipeline ===== -->
+  <rect x="40" y="50" width="280" height="512" fill="none" stroke="#16967d" stroke-width="2"/>
+
+  <rect x="70" y="80" width="220" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="180" y="107" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">Document Upload</text>
+  <text x="180" y="152" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Original File</text>
+  <line x1="180" y1="124" x2="180" y2="172" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="70" y="176" width="220" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="180" y="196" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">Invisible Watermark</text>
+  <text x="180" y="211" text-anchor="middle" font-size="10.5" fill="#57534e">DWT-DCT · carries doc ID</text>
+  <text x="180" y="248" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Watermarked File</text>
+  <line x1="180" y1="220" x2="180" y2="268" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="70" y="272" width="220" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="180" y="292" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">Fingerprint Extraction</text>
+  <text x="180" y="307" text-anchor="middle" font-size="10.5" fill="#57534e">SHA-256 · perceptual hash</text>
+  <text x="180" y="344" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Fingerprints</text>
+  <line x1="180" y1="316" x2="180" y2="364" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="70" y="368" width="220" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="180" y="388" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">AES-256 Encryption</text>
+  <text x="180" y="403" text-anchor="middle" font-size="10.5" fill="#57534e">server vault · master key</text>
+  <text x="180" y="440" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Ciphertext</text>
+  <line x1="180" y1="412" x2="180" y2="460" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="70" y="464" width="220" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="180" y="484" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">IPFS Storage</text>
+  <text x="180" y="499" text-anchor="middle" font-size="10.5" fill="#57534e">ciphertext only — unreadable</text>
+
+  <!-- ===== RIGHT COLUMN ===== -->
+  <rect x="545" y="80" width="230" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="660" y="107" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">User Registration</text>
+  <text x="660" y="152" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Email + OTP</text>
+  <line x1="660" y1="124" x2="660" y2="172" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="545" y="176" width="230" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="660" y="203" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">MongoDB Database</text>
+  <text x="660" y="248" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Fetch Recipient</text>
+  <line x1="660" y1="220" x2="660" y2="268" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="545" y="272" width="230" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="660" y="292" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">Issuer Portal</text>
+  <text x="660" y="307" text-anchor="middle" font-size="10.5" fill="#57534e">publish to recipient wallet / email</text>
+
+  <!-- split -->
+  <text x="510" y="360" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Record Proof</text>
+  <line x1="612" y1="316" x2="535" y2="396" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+  <text x="800" y="360" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Send Alert</text>
+  <line x1="708" y1="316" x2="790" y2="396" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="430" y="400" width="200" height="50" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="530" y="420" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">Blockchain Storage</text>
+  <text x="530" y="436" text-anchor="middle" font-size="10.5" fill="#57534e">keccak-256 hash · Sepolia · MetaMask</text>
+
+  <rect x="700" y="400" width="210" height="50" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="805" y="420" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">Notification Service</text>
+  <text x="805" y="436" text-anchor="middle" font-size="10.5" fill="#57534e">n8n → WhatsApp + Email (links only)</text>
+
+  <!-- ===== MERGE ===== -->
+  <text x="255" y="548" text-anchor="middle" font-size="12" font-weight="700" fill="#111">Encrypted Document (CID)</text>
+  <line x1="180" y1="508" x2="400" y2="576" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+  <text x="580" y="520" text-anchor="middle" font-size="12" font-weight="700" fill="#111">On-chain Proof</text>
+  <line x1="530" y1="450" x2="490" y2="576" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="330" y="580" width="280" height="48" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="470" y="600" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">Document Delivery</text>
+  <text x="470" y="616" text-anchor="middle" font-size="10.5" fill="#57534e">appears in recipient's Received Documents</text>
+
+  <text x="486" y="652" text-anchor="start" font-size="12" font-weight="700" fill="#111">Open &amp; Decrypt on Site</text>
+  <line x1="470" y1="628" x2="470" y2="664" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="330" y="668" width="280" height="44" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="470" y="695" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">User Access — view · download · share</text>
+
+  <text x="486" y="736" text-anchor="start" font-size="12" font-weight="700" fill="#111">Authenticity Check</text>
+  <line x1="470" y1="712" x2="470" y2="748" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="330" y="752" width="280" height="52" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="470" y="772" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">4-Layer Verification</text>
+  <text x="470" y="789" text-anchor="middle" font-size="10.5" fill="#57534e">SHA-256 · watermark · pHash · blockchain record</text>
+
+  <text x="486" y="828" text-anchor="start" font-size="12" font-weight="700" fill="#111">Temporary Encrypted Link</text>
+  <line x1="470" y1="804" x2="470" y2="840" stroke="#93402f" stroke-width="1.6" marker-end="url(#fa)"/>
+
+  <rect x="330" y="844" width="280" height="52" fill="#fdf1d6" stroke="#16967d" stroke-width="1.6"/>
+  <text x="470" y="864" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f2937">External Share Viewer</text>
+  <text x="470" y="881" text-anchor="middle" font-size="10.5" fill="#57534e">expiring · view-only · watermarked · revocable</text>
+</svg>

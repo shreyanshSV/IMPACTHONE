@@ -1,0 +1,21 @@
+flowchart TD
+  subgraph SP["Security Pipeline"]
+    A["Document Upload"] -->|Original File| B["Invisible Watermark<br/>DWT-DCT · carries doc ID"]
+    B -->|Watermarked File| C["Fingerprint Extraction<br/>SHA-256 · perceptual hash"]
+    C -->|Fingerprints| D["AES-256 Encryption<br/>server vault · master key"]
+    D -->|Ciphertext| E["IPFS Storage<br/>ciphertext only — unreadable"]
+  end
+
+  R["User Registration"] -->|Email + OTP| DB["MongoDB Database"]
+  DB -->|Fetch Recipient| IP["Issuer Portal<br/>publish to recipient wallet / email"]
+  IP -->|Record Proof| BC["Blockchain Storage<br/>keccak-256 hash · Sepolia · MetaMask"]
+  IP -->|Send Alert| N8["Notification Service<br/>n8n → WhatsApp + Email (links only)"]
+
+  E -->|Encrypted Document CID| DD["Document Delivery<br/>recipient's Received Documents"]
+  BC -->|On-chain Proof| DD
+  DD -->|Open & Decrypt on Site| UA["User Access — view · download · share"]
+  UA -->|Authenticity Check| V4["4-Layer Verification<br/>SHA-256 · watermark · pHash · blockchain"]
+  V4 -->|Temporary Encrypted Link| EX["External Share Viewer<br/>expiring · view-only · watermarked · revocable"]
+
+  classDef box fill:#fdf1d6,stroke:#16967d,color:#1f2937;
+  class A,B,C,D,E,R,DB,IP,BC,N8,DD,UA,V4,EX box;

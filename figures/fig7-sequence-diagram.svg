@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 1000" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="m" markerWidth="12" markerHeight="10" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#000"/>
+    </marker>
+  </defs>
+  <rect width="940" height="1000" fill="#ffffff" stroke="#000" stroke-width="1.5"/>
+
+  <!-- ===== top actor boxes ===== -->
+  <rect x="30"  y="28" width="110" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="85"  y="50" text-anchor="middle" font-size="14">Issuer</text>
+  <rect x="175" y="28" width="110" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="230" y="50" text-anchor="middle" font-size="14">User</text>
+  <rect x="335" y="28" width="150" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="410" y="50" text-anchor="middle" font-size="14">DocVerify Server</text>
+  <rect x="520" y="28" width="90"  height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="565" y="50" text-anchor="middle" font-size="14">IPFS</text>
+  <rect x="645" y="28" width="120" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="705" y="50" text-anchor="middle" font-size="14">Blockchain</text>
+  <rect x="795" y="28" width="120" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="855" y="50" text-anchor="middle" font-size="14">External Viewer</text>
+
+  <!-- ===== lifelines ===== -->
+  <line x1="85"  y1="62" x2="85"  y2="930" stroke="#000" stroke-width="1.2"/>
+  <line x1="230" y1="62" x2="230" y2="930" stroke="#000" stroke-width="1.2"/>
+  <line x1="410" y1="62" x2="410" y2="930" stroke="#000" stroke-width="1.2"/>
+  <line x1="565" y1="62" x2="565" y2="930" stroke="#000" stroke-width="1.2"/>
+  <line x1="705" y1="62" x2="705" y2="930" stroke="#000" stroke-width="1.2"/>
+  <line x1="855" y1="62" x2="855" y2="930" stroke="#000" stroke-width="1.2"/>
+
+  <!-- ============ PHASE 1: PUBLISH ============ -->
+  <line x1="20" y1="92" x2="920" y2="92" stroke="#000" stroke-width="0.8" stroke-dasharray="4 4"/>
+  <rect x="30" y="80" width="98" height="22" fill="#fff" stroke="#000"/>
+  <text x="79" y="96" text-anchor="middle" font-size="12" font-weight="bold">1. PUBLISH</text>
+
+  <text x="247" y="124" text-anchor="middle" font-size="12">upload document</text>
+  <line x1="85" y1="132" x2="406" y2="132" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="487" y="164" text-anchor="middle" font-size="12">watermark + encrypt, pin file</text>
+  <line x1="410" y1="172" x2="561" y2="172" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="487" y="204" text-anchor="middle" font-size="12">return CID</text>
+  <line x1="565" y1="212" x2="414" y2="212" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m)"/>
+
+  <text x="395" y="244" text-anchor="middle" font-size="12">record keccak-256 hash on-chain (MetaMask)</text>
+  <line x1="85" y1="252" x2="701" y2="252" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="320" y="284" text-anchor="middle" font-size="12">notify: document received</text>
+  <line x1="410" y1="292" x2="234" y2="292" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m)"/>
+
+  <!-- ============ PHASE 2: VIEW ============ -->
+  <line x1="20" y1="324" x2="920" y2="324" stroke="#000" stroke-width="0.8" stroke-dasharray="4 4"/>
+  <rect x="30" y="312" width="80" height="22" fill="#fff" stroke="#000"/>
+  <text x="70" y="328" text-anchor="middle" font-size="12" font-weight="bold">2. VIEW</text>
+
+  <text x="320" y="356" text-anchor="middle" font-size="12">login: email + OTP</text>
+  <line x1="230" y1="364" x2="406" y2="364" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="320" y="396" text-anchor="middle" font-size="12">open document</text>
+  <line x1="230" y1="404" x2="406" y2="404" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="487" y="436" text-anchor="middle" font-size="12">fetch ciphertext</text>
+  <line x1="410" y1="444" x2="561" y2="444" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="320" y="476" text-anchor="middle" font-size="12">decrypt (AES-256) → display</text>
+  <line x1="410" y1="484" x2="234" y2="484" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m)"/>
+
+  <!-- ============ PHASE 3: AUTHENTICITY CHECK ============ -->
+  <line x1="20" y1="516" x2="920" y2="516" stroke="#000" stroke-width="0.8" stroke-dasharray="4 4"/>
+  <rect x="30" y="504" width="170" height="22" fill="#fff" stroke="#000"/>
+  <text x="115" y="520" text-anchor="middle" font-size="12" font-weight="bold">3. AUTHENTICITY CHECK</text>
+
+  <text x="320" y="548" text-anchor="middle" font-size="12">upload file to check</text>
+  <line x1="230" y1="556" x2="406" y2="556" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="557" y="588" text-anchor="middle" font-size="12">4-layer check: hash · watermark · pHash · chain record</text>
+  <line x1="410" y1="596" x2="701" y2="596" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="557" y="628" text-anchor="middle" font-size="12">fingerprint matches</text>
+  <line x1="705" y1="636" x2="414" y2="636" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m)"/>
+
+  <text x="320" y="668" text-anchor="middle" font-size="12">VERIFIED (+ WhatsApp / email alert)</text>
+  <line x1="410" y1="676" x2="234" y2="676" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m)"/>
+
+  <!-- ============ PHASE 4: SHARE ============ -->
+  <line x1="20" y1="708" x2="920" y2="708" stroke="#000" stroke-width="0.8" stroke-dasharray="4 4"/>
+  <rect x="30" y="696" width="90" height="22" fill="#fff" stroke="#000"/>
+  <text x="75" y="712" text-anchor="middle" font-size="12" font-weight="bold">4. SHARE</text>
+
+  <text x="320" y="740" text-anchor="middle" font-size="12">create expiring share link</text>
+  <line x1="230" y1="748" x2="406" y2="748" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="320" y="780" text-anchor="middle" font-size="12">private link (secret token)</text>
+  <line x1="410" y1="788" x2="234" y2="788" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m)"/>
+
+  <text x="542" y="812" text-anchor="middle" font-size="12">send link (any channel)</text>
+  <line x1="230" y1="820" x2="851" y2="820" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="632" y="844" text-anchor="middle" font-size="12">open link: token + email code</text>
+  <line x1="855" y1="852" x2="414" y2="852" stroke="#000" stroke-width="1.2" marker-end="url(#m)"/>
+
+  <text x="632" y="876" text-anchor="middle" font-size="12">watermarked view-only copy</text>
+  <line x1="410" y1="884" x2="851" y2="884" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m)"/>
+
+  <text x="470" y="914" text-anchor="middle" font-size="12" font-style="italic">expiry / revoke → decryption key destroyed, link dead forever</text>
+
+  <!-- ===== bottom actor boxes ===== -->
+  <rect x="30"  y="930" width="110" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="85"  y="952" text-anchor="middle" font-size="14">Issuer</text>
+  <rect x="175" y="930" width="110" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="230" y="952" text-anchor="middle" font-size="14">User</text>
+  <rect x="335" y="930" width="150" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="410" y="952" text-anchor="middle" font-size="14">DocVerify Server</text>
+  <rect x="520" y="930" width="90"  height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="565" y="952" text-anchor="middle" font-size="14">IPFS</text>
+  <rect x="645" y="930" width="120" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="705" y="952" text-anchor="middle" font-size="14">Blockchain</text>
+  <rect x="795" y="930" width="120" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="855" y="952" text-anchor="middle" font-size="14">External Viewer</text>
+</svg>

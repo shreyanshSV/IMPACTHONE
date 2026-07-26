@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="ar9" markerWidth="12" markerHeight="10" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#000"/>
+    </marker>
+    <marker id="ar9s" markerWidth="12" markerHeight="10" refX="1" refY="4" orient="auto">
+      <path d="M10,0 L0,4 L10,8 z" fill="#000"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="820" fill="#ffffff"/>
+
+  <!-- ============ TOP RETURN LOOP: IPFS -> User ============ -->
+  <line x1="870" y1="660" x2="985" y2="660" stroke="#000" stroke-width="1.4"/>
+  <line x1="985" y1="660" x2="985" y2="60"  stroke="#000" stroke-width="1.4"/>
+  <line x1="985" y1="60"  x2="180" y2="60"  stroke="#000" stroke-width="1.4"/>
+  <line x1="180" y1="60"  x2="180" y2="118" stroke="#000" stroke-width="1.4" marker-end="url(#ar9)"/>
+  <text x="565" y="48" text-anchor="middle" font-size="13" fill="#000">Retrieve &amp; decrypt document (Master Key on server)</text>
+
+  <!-- ============ USER (top-left stick figure) ============ -->
+  <ellipse cx="180" cy="135" rx="14" ry="12" fill="none" stroke="#000" stroke-width="1.6"/>
+  <line x1="180" y1="147" x2="180" y2="185" stroke="#000" stroke-width="1.6"/>
+  <line x1="150" y1="162" x2="210" y2="162" stroke="#000" stroke-width="1.6"/>
+  <line x1="180" y1="185" x2="160" y2="215" stroke="#000" stroke-width="1.6"/>
+  <line x1="180" y1="185" x2="200" y2="215" stroke="#000" stroke-width="1.6"/>
+  <text x="180" y="237" text-anchor="middle" font-size="13.5" fill="#000">User (Recipient)</text>
+  <rect x="30" y="118" width="112" height="66" fill="#fff" stroke="#000" stroke-width="1.3"/>
+  <text x="86" y="140" text-anchor="middle" font-size="11" fill="#000">MetaMask wallet</text>
+  <text x="86" y="156" text-anchor="middle" font-size="11" fill="#000">Email + OTP</text>
+  <text x="86" y="172" text-anchor="middle" font-size="11" fill="#000">login</text>
+
+  <!-- ============ ISSUER (top-right building) ============ -->
+  <polygon points="760,70 700,110 820,110" fill="none" stroke="#000" stroke-width="1.8"/>
+  <circle cx="760" cy="93" r="8" fill="none" stroke="#000" stroke-width="1.5"/>
+  <rect x="706" y="110" width="108" height="70" fill="none" stroke="#000" stroke-width="1.8"/>
+  <line x1="722" y1="118" x2="722" y2="172" stroke="#000" stroke-width="1.4"/>
+  <line x1="747" y1="118" x2="747" y2="172" stroke="#000" stroke-width="1.4"/>
+  <line x1="773" y1="118" x2="773" y2="172" stroke="#000" stroke-width="1.4"/>
+  <line x1="798" y1="118" x2="798" y2="172" stroke="#000" stroke-width="1.4"/>
+  <rect x="698" y="180" width="124" height="12" fill="none" stroke="#000" stroke-width="1.8"/>
+  <text x="640" y="82" text-anchor="end" font-size="13.5" fill="#000">Issuer (Organisation)</text>
+  <rect x="850" y="118" width="122" height="70" fill="#fff" stroke="#000" stroke-width="1.3"/>
+  <text x="911" y="140" text-anchor="middle" font-size="11" fill="#000">Private Key</text>
+  <text x="911" y="156" text-anchor="middle" font-size="11" fill="#000">MetaMask</text>
+  <text x="911" y="172" text-anchor="middle" font-size="11" fill="#000">Document Issuer</text>
+
+  <!-- ============ USER <-> ISSUER ============ -->
+  <text x="455" y="130" text-anchor="middle" font-size="13" fill="#000">Register wallet / email</text>
+  <line x1="215" y1="140" x2="694" y2="140" stroke="#000" stroke-width="1.5" marker-end="url(#ar9)"/>
+  <line x1="694" y1="166" x2="219" y2="166" stroke="#000" stroke-width="1.5" marker-end="url(#ar9)"/>
+  <text x="455" y="186" text-anchor="middle" font-size="13" fill="#000">Document delivered (encrypted)</text>
+
+  <!-- ============ ISSUER -> PUBLIC BLOCKCHAIN (diagonal, rotated labels) ============ -->
+  <line x1="700" y1="192" x2="402" y2="382" stroke="#000" stroke-width="1.5" marker-end="url(#ar9)"/>
+  <text x="583" y="258" text-anchor="middle" font-size="12.5" fill="#000" transform="rotate(-33 583 258)">Store keccak-256 hash</text>
+  <text x="529" y="312" text-anchor="middle" font-size="12.5" fill="#000" transform="rotate(-33 529 312)">Issuer + receiver record</text>
+
+  <!-- ============ PUBLIC BLOCKCHAIN CLUSTER (center-left) ============ -->
+  <ellipse cx="300" cy="470" rx="170" ry="105" fill="none" stroke="#7cc0e8" stroke-width="2.4"/>
+  <!-- ring cubes -->
+  <g stroke="#1d4e79" stroke-width="1.2">
+    <g><rect x="452" y="452" width="34" height="34" fill="#3b82c4"/><path d="M452,452 l11,-10 h34 l-11,10 z" fill="#8ec3e6"/><path d="M486,452 l11,-10 v34 l-11,10 z" fill="#28618f"/></g>
+    <g><rect x="368" y="350" width="34" height="34" fill="#3b82c4"/><path d="M368,350 l11,-10 h34 l-11,10 z" fill="#8ec3e6"/><path d="M402,350 l11,-10 v34 l-11,10 z" fill="#28618f"/></g>
+    <g><rect x="198" y="350" width="34" height="34" fill="#3b82c4"/><path d="M198,350 l11,-10 h34 l-11,10 z" fill="#8ec3e6"/><path d="M232,350 l11,-10 v34 l-11,10 z" fill="#28618f"/></g>
+    <g><rect x="114" y="452" width="34" height="34" fill="#3b82c4"/><path d="M114,452 l11,-10 h34 l-11,10 z" fill="#8ec3e6"/><path d="M148,452 l11,-10 v34 l-11,10 z" fill="#28618f"/></g>
+    <g><rect x="198" y="554" width="34" height="34" fill="#3b82c4"/><path d="M198,554 l11,-10 h34 l-11,10 z" fill="#8ec3e6"/><path d="M232,554 l11,-10 v34 l-11,10 z" fill="#28618f"/></g>
+    <g><rect x="368" y="554" width="34" height="34" fill="#3b82c4"/><path d="M368,554 l11,-10 h34 l-11,10 z" fill="#8ec3e6"/><path d="M402,554 l11,-10 v34 l-11,10 z" fill="#28618f"/></g>
+  </g>
+  <!-- centre disc with padlock -->
+  <ellipse cx="300" cy="470" rx="88" ry="50" fill="#f2f8fd" stroke="#7cc0e8" stroke-width="2"/>
+  <rect x="243" y="462" width="22" height="17" rx="3" fill="#e8b93b" stroke="#8a6d1d" stroke-width="1.2"/>
+  <path d="M247,462 v-6 a7,7 0 0 1 14,0 v6" fill="none" stroke="#8a6d1d" stroke-width="1.8"/>
+  <text x="316" y="466" text-anchor="middle" font-size="13" font-weight="bold" fill="#000">Ethereum Sepolia</text>
+  <text x="316" y="484" text-anchor="middle" font-size="11.5" fill="#000">DocVerify Registry</text>
+
+  <!-- ============ ISSUER <-> SERVER (vertical, labels both sides) ============ -->
+  <line x1="760" y1="196" x2="760" y2="374" stroke="#000" stroke-width="1.5" marker-start="url(#ar9s)" marker-end="url(#ar9)"/>
+  <text x="748" y="272" text-anchor="end" font-size="12.5" fill="#000">Upload</text>
+  <text x="748" y="288" text-anchor="end" font-size="12.5" fill="#000">document</text>
+  <text x="772" y="272" text-anchor="start" font-size="12.5" fill="#000">Publish signed</text>
+  <text x="772" y="288" text-anchor="start" font-size="12.5" fill="#000">record (MetaMask)</text>
+
+  <!-- ============ DOCVERIFY SERVER (right-middle tower + master key) ============ -->
+  <rect x="710" y="380" width="100" height="110" rx="6" fill="#f8fafc" stroke="#000" stroke-width="1.8"/>
+  <rect x="748" y="396" width="24" height="18" rx="3" fill="#e8b93b" stroke="#8a6d1d" stroke-width="1.2"/>
+  <path d="M752,396 v-6 a8,8 0 0 1 16,0 v6" fill="none" stroke="#8a6d1d" stroke-width="1.8"/>
+  <line x1="722" y1="430" x2="798" y2="430" stroke="#000" stroke-width="1.2"/>
+  <line x1="722" y1="452" x2="798" y2="452" stroke="#000" stroke-width="1.2"/>
+  <line x1="722" y1="474" x2="798" y2="474" stroke="#000" stroke-width="1.2"/>
+  <circle cx="730" cy="441" r="3" fill="#000"/>
+  <circle cx="730" cy="463" r="3" fill="#000"/>
+  <text x="700" y="440" text-anchor="end" font-size="13.5" fill="#000">DocVerify Server</text>
+  <line x1="810" y1="432" x2="848" y2="432" stroke="#000" stroke-width="1.2"/>
+  <rect x="850" y="394" width="124" height="80" fill="#fff" stroke="#000" stroke-width="1.3"/>
+  <text x="912" y="416" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#000">Master Key</text>
+  <text x="912" y="433" text-anchor="middle" font-size="11" fill="#000">AES-256</text>
+  <text x="912" y="449" text-anchor="middle" font-size="11" fill="#000">encrypt · decrypt</text>
+  <text x="912" y="465" text-anchor="middle" font-size="11" fill="#000">server-only</text>
+
+  <!-- ============ SERVER -> IPFS ============ -->
+  <line x1="760" y1="494" x2="760" y2="610" stroke="#000" stroke-width="1.5" marker-end="url(#ar9)"/>
+  <text x="772" y="548" text-anchor="start" font-size="12.5" fill="#000">Store encrypted</text>
+  <text x="772" y="564" text-anchor="start" font-size="12.5" fill="#000">document (ciphertext)</text>
+
+  <!-- ============ IPFS (bottom-right dark box) ============ -->
+  <rect x="650" y="615" width="220" height="100" fill="#08312d" stroke="#000" stroke-width="1.5"/>
+  <text x="715" y="672" text-anchor="middle" font-size="26" font-weight="bold" fill="#ffffff">IPFS</text>
+  <text x="715" y="694" text-anchor="middle" font-size="10" fill="#9fe8dd">encrypted files only</text>
+  <g stroke="#2f8f85" fill="none" stroke-width="1.3">
+    <circle cx="820" cy="665" r="26"/>
+    <ellipse cx="820" cy="665" rx="10" ry="26"/>
+    <line x1="794" y1="665" x2="846" y2="665"/>
+  </g>
+
+  <!-- ============ VERIFIER (bottom, under cluster) ============ -->
+  <ellipse cx="300" cy="675" rx="13" ry="12" fill="none" stroke="#000" stroke-width="1.6"/>
+  <line x1="300" y1="687" x2="300" y2="722" stroke="#000" stroke-width="1.6"/>
+  <line x1="272" y1="700" x2="328" y2="700" stroke="#000" stroke-width="1.6"/>
+  <line x1="300" y1="722" x2="282" y2="748" stroke="#000" stroke-width="1.6"/>
+  <line x1="300" y1="722" x2="318" y2="748" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="770" text-anchor="middle" font-size="13.5" fill="#000">Verifier (Employer)</text>
+
+  <!-- cluster <-> verifier -->
+  <line x1="300" y1="580" x2="300" y2="658" stroke="#000" stroke-width="1.5" marker-start="url(#ar9s)" marker-end="url(#ar9)"/>
+  <text x="314" y="612" text-anchor="start" font-size="12.5" fill="#000">4-layer check — verify hash</text>
+  <text x="314" y="628" text-anchor="start" font-size="12.5" fill="#000">on the public blockchain</text>
+
+  <!-- verifier <-> IPFS -->
+  <line x1="338" y1="688" x2="644" y2="688" stroke="#000" stroke-width="1.5" marker-start="url(#ar9s)" marker-end="url(#ar9)"/>
+  <text x="490" y="710" text-anchor="middle" font-size="12.5" fill="#000">Retrieve document if authorized</text>
+  <text x="490" y="726" text-anchor="middle" font-size="12.5" fill="#000">(share link · token + email code)</text>
+
+  <!-- ============ TALL LEFT LINE: User -> Verifier ============ -->
+  <line x1="156" y1="218" x2="66"  y2="218" stroke="#000" stroke-width="1.4"/>
+  <line x1="66"  y1="218" x2="66"  y2="700" stroke="#000" stroke-width="1.4"/>
+  <line x1="66"  y1="700" x2="266" y2="700" stroke="#000" stroke-width="1.4" marker-end="url(#ar9)"/>
+  <text x="52" y="459" text-anchor="middle" font-size="12.5" fill="#000" transform="rotate(-90 52 459)">Provide temporary share link (token + code)</text>
+
+  <!-- caption -->
+  <text x="500" y="804" text-anchor="middle" font-size="13" fill="#000"><tspan font-weight="bold">Figure.</tspan> DocVerify — encrypted document issuance, on-chain proof, and controlled sharing.</text>
+</svg>

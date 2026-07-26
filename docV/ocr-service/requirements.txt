@@ -1,0 +1,16 @@
+# ── Core (Layer 2 watermark + Layer 3 pHash) — light install ──
+fastapi
+uvicorn[standard]
+python-multipart
+invisible-watermark
+imagehash
+Pillow
+opencv-python-headless
+numpy
+
+# ── Optional: high-accuracy OCR (heavy, needs GPU for best speed) ──
+# Uncomment to enable the /ocr endpoint. On an NVIDIA GPU (e.g. RTX 4060)
+# install the matching paddlepaddle-gpu wheel from the PaddlePaddle site.
+# paddleocr
+# paddlepaddle            # CPU
+# paddlepaddle-gpu        # GPU (pick the CUDA-matched build)

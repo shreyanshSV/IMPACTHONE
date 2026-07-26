@@ -1,0 +1,200 @@
+/* ============================================================================
+   DV3D — DocVerify 3D depth & premium-UI layer
+   ----------------------------------------------------------------------------
+   Design direction: "Modern Dark Cinema" — deep gradient base (never pure
+   black), ambient animated light blobs, frosted-glass surfaces with hairline
+   borders, radius 16, easing cubic-bezier(.16,1,.3,1), accent-glow CTAs.
+
+   This file is PURELY additive: it layers depth/3D on top of the existing
+   dogstudio theme without changing markup or logic. The .dv3d-stage element
+   (canvas + blobs) is injected by dv3d.js as the first child of each app page;
+   content is lifted above it with the two precise rules below.
+   ========================================================================== */
+
+:root {
+  --dv-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dv-hairline: rgba(255, 255, 255, 0.08);
+  --dv-edge: rgba(255, 255, 255, 0.14);        /* top-edge highlight */
+  --dv-surface: rgba(255, 255, 255, 0.045);
+  --dv-glow-sky: rgba(14, 165, 233, 0.45);
+  --dv-glow-emerald: rgba(16, 185, 129, 0.4);
+  --dv-glow-gold: rgba(245, 179, 1, 0.45);
+  --dv-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --dv-shadow-2: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
+  --dv-shadow-3: 0 24px 60px -18px rgba(0, 0, 0, 0.65);
+}
+
+/* Deep base behind everything (every page paints its own bg on top). */
+body { background: #05080d; }
+
+/* ---------------------------------------------------------------- QUALITY */
+/* Interaction affordance + fast taps (UX guideline: cursor-pointer, 300ms). */
+button, [role="button"], a, label[for], summary { cursor: pointer; }
+button, a, input, select, textarea { touch-action: manipulation; }
+
+/* Visible, consistent keyboard focus everywhere (WCAG). */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+#issuerDashboard :where(button, a, input, select, textarea):focus-visible,
+#issuerAuthPage :where(button, a, input, select, textarea):focus-visible {
+  outline-color: #fbbf24;
+}
+
+/* ------------------------------------------------------------------ STAGE */
+/* Injected by dv3d.js as the FIRST child of each app page. Sits above the
+   page's own background (z-0) and below the content (lifted to z-1 below). */
+.dv3d-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.dv3d-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Ambient light blobs — GPU-cheap (transform/opacity only). */
+.dv3d-blob {
+  position: absolute;
+  width: 44vmax;
+  height: 44vmax;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.13;
+  will-change: transform;
+  animation: dv3dDrift 26s var(--dv-ease) infinite alternate;
+}
+.dv3d-blob--a { top: -18vmax; left: -10vmax; }
+.dv3d-blob--b { bottom: -20vmax; right: -12vmax; animation-duration: 34s; animation-delay: -8s; }
+.dv3d-blob--c { top: 30%; left: 55%; width: 30vmax; height: 30vmax; opacity: 0.09; animation-duration: 42s; animation-delay: -18s; }
+
+/* Page-tinted blobs */
+.dv3d-stage[data-hue="sky"] .dv3d-blob--a { background: radial-gradient(circle, #0ea5e9, transparent 65%); }
+.dv3d-stage[data-hue="sky"] .dv3d-blob--b { background: radial-gradient(circle, #10b981, transparent 65%); }
+.dv3d-stage[data-hue="sky"] .dv3d-blob--c { background: radial-gradient(circle, #6366f1, transparent 65%); }
+.dv3d-stage[data-hue="gold"] .dv3d-blob--a { background: radial-gradient(circle, #f5b301, transparent 65%); }
+.dv3d-stage[data-hue="gold"] .dv3d-blob--b { background: radial-gradient(circle, #10b981, transparent 65%); }
+.dv3d-stage[data-hue="gold"] .dv3d-blob--c { background: radial-gradient(circle, #b45309, transparent 65%); }
+
+@keyframes dv3dDrift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(6vmax, -4vmax, 0) scale(1.12); }
+  100% { transform: translate3d(-4vmax, 5vmax, 0) scale(0.94); }
+}
+
+/* Lift page content above the stage (verified-safe: these wrappers are
+   unpositioned in the markup; sidebar/menu/overlay already have z-index). */
+#dashboard.ds-dark > div.flex-1 { position: relative; z-index: 1; }
+#issuerDashboard > header,
+#issuerDashboard > main { position: relative; z-index: 1; }
+
+/* -------------------------------------------------------------- GLASS UI */
+/* Sidebar + headers become frosted glass so the 3D field reads through. */
+#dashboard.ds-dark #sidebar {
+  background: rgba(8, 13, 21, 0.72) !important;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border-right: 1px solid var(--dv-hairline);
+}
+#dashboard.ds-dark > div.flex-1 > header {
+  background: rgba(8, 13, 21, 0.62) !important;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border-bottom: 1px solid var(--dv-hairline);
+}
+
+/* ------------------------------------------------------------- CARD DEPTH */
+/* Dashboard cards (rounded-2xl surfaces inside the scroll area): hairline +
+   top-edge highlight + layered shadow + hover lift. Transform/opacity only. */
+#dashboard.ds-dark main .bg-white.rounded-2xl,
+#dashboard.ds-dark main .rounded-2xl.border {
+  border-color: var(--dv-hairline) !important;
+  box-shadow:
+    inset 0 1px 0 var(--dv-edge),
+    var(--dv-shadow-1),
+    var(--dv-shadow-2);
+  transition: transform 0.25s var(--dv-ease), box-shadow 0.25s var(--dv-ease);
+}
+#dashboard.ds-dark main .bg-white.rounded-2xl:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 var(--dv-edge),
+    var(--dv-shadow-2),
+    var(--dv-shadow-3),
+    0 0 40px -18px var(--dv-glow-sky);
+}
+
+/* Issuer luxe cards: deepen the existing look with edge light + gold glow. */
+.luxe-card {
+  box-shadow:
+    inset 0 1px 0 var(--dv-edge),
+    var(--dv-shadow-1),
+    var(--dv-shadow-2) !important;
+  transition: transform 0.25s var(--dv-ease), box-shadow 0.25s var(--dv-ease);
+}
+.luxe-card.luxe-hover:hover {
+  box-shadow:
+    inset 0 1px 0 var(--dv-edge),
+    var(--dv-shadow-2),
+    var(--dv-shadow-3),
+    0 0 44px -16px var(--dv-glow-gold) !important;
+}
+
+/* ------------------------------------------------------------------ GLARE */
+/* Pointer-following light sweep, driven by dv3d.js via --gx/--gy. */
+.dv-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+  background: radial-gradient(
+    420px circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 255, 255, 0.10),
+    transparent 55%
+  );
+  transition: opacity 0.3s var(--dv-ease);
+}
+.dv-tilting { will-change: transform; }
+.dv-tilting .dv-glare { opacity: 1; }
+
+/* ------------------------------------------------------------- CTA GLOW */
+#dashboard.ds-dark button.bg-brand-600:hover,
+#dashboard.ds-dark .bg-brand-600.hover\:bg-brand-700:hover {
+  box-shadow: 0 10px 34px -10px var(--dv-glow-sky);
+}
+.btn-gold:hover { box-shadow: 0 10px 36px -10px var(--dv-glow-gold); }
+.btn-emerald-glass:hover { box-shadow: 0 10px 34px -12px var(--dv-glow-emerald); }
+
+/* ------------------------------------------------------------ SCROLLBARS */
+#dashboard.ds-dark main::-webkit-scrollbar,
+#issuerDashboard main::-webkit-scrollbar { width: 10px; }
+#dashboard.ds-dark main::-webkit-scrollbar-thumb,
+#issuerDashboard main::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+#dashboard.ds-dark main::-webkit-scrollbar-thumb:hover,
+#issuerDashboard main::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+  background-clip: content-box;
+}
+
+/* --------------------------------------------------------- REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  .dv3d-blob { animation: none; }
+  #dashboard.ds-dark main .bg-white.rounded-2xl,
+  .luxe-card { transition: none; }
+  #dashboard.ds-dark main .bg-white.rounded-2xl:hover { transform: none; }
+}

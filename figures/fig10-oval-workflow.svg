@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 1140" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <marker id="o" markerWidth="12" markerHeight="10" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#000"/>
+    </marker>
+  </defs>
+  <rect width="640" height="1140" fill="#ffffff"/>
+  <text x="320" y="1120" text-anchor="middle" font-size="15" fill="#000"><tspan font-weight="bold">Figure.</tspan> Workflow of the DocVerify document verification system.</text>
+
+  <!-- ============ ovals (center x=300) ============ -->
+  <!-- 1 Issuer -->
+  <rect x="200" y="30" width="200" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="59" text-anchor="middle" font-size="15" fill="#000">Issuer</text>
+
+  <text x="300" y="106" text-anchor="middle" font-size="13.5" fill="#000">Upload Document</text>
+  <line x1="300" y1="76" x2="300" y2="124" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 2 Server -->
+  <rect x="190" y="128" width="220" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="157" text-anchor="middle" font-size="15" fill="#000">DocVerify Server</text>
+
+  <text x="300" y="204" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#000">Encrypt with Master Key (AES-256)</text>
+  <line x1="300" y1="174" x2="300" y2="222" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 3 Ciphertext -->
+  <rect x="200" y="226" width="200" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="255" text-anchor="middle" font-size="15" fill="#000">Ciphertext</text>
+
+  <text x="300" y="302" text-anchor="middle" font-size="13.5" fill="#000">Store Encrypted File</text>
+  <line x1="300" y1="272" x2="300" y2="320" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 4 IPFS -->
+  <rect x="200" y="324" width="200" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="353" text-anchor="middle" font-size="15" fill="#000">IPFS Storage</text>
+
+  <text x="300" y="400" text-anchor="middle" font-size="13.5" fill="#000">Deliver + Notify (Email / WhatsApp)</text>
+  <line x1="300" y1="370" x2="300" y2="418" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 5 User -->
+  <rect x="195" y="422" width="210" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="451" text-anchor="middle" font-size="15" fill="#000">User (Recipient)</text>
+
+  <text x="300" y="498" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#000">Open — Decrypt with Master Key</text>
+  <line x1="300" y1="468" x2="300" y2="516" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 6 Original document -->
+  <rect x="175" y="520" width="250" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="549" text-anchor="middle" font-size="15" fill="#000">Original Document (View)</text>
+
+  <text x="300" y="588" text-anchor="middle" font-size="13.5" fill="#000">Authenticity Check</text>
+  <text x="300" y="604" text-anchor="middle" font-size="12" fill="#000">(SHA-256 · watermark · pHash)</text>
+  <line x1="300" y1="566" x2="300" y2="620" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 7 Public blockchain -->
+  <rect x="190" y="624" width="220" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="653" text-anchor="middle" font-size="15" fill="#000">Public Blockchain</text>
+
+  <text x="300" y="700" text-anchor="middle" font-size="13.5" fill="#000">Hash Matches → VERIFIED</text>
+  <line x1="300" y1="670" x2="300" y2="718" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 8 Verified result -->
+  <rect x="200" y="722" width="200" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="751" text-anchor="middle" font-size="15" fill="#000">Verified Result</text>
+
+  <text x="300" y="798" text-anchor="middle" font-size="13.5" fill="#000">Create Temporary Share Link</text>
+  <line x1="300" y1="768" x2="300" y2="816" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 9 External verifier -->
+  <rect x="190" y="820" width="220" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="849" text-anchor="middle" font-size="15" fill="#000">External Verifier</text>
+
+  <text x="300" y="896" text-anchor="middle" font-size="13.5" fill="#000">Token + Email Code · View-Only</text>
+  <line x1="300" y1="866" x2="300" y2="914" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+
+  <!-- 10 Share closed -->
+  <rect x="165" y="918" width="270" height="46" rx="23" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="300" y="940" text-anchor="middle" font-size="15" fill="#000">Share Expires / Revoked</text>
+  <text x="300" y="956" text-anchor="middle" font-size="11.5" fill="#000">(share key destroyed — link dead forever)</text>
+
+  <!-- ============ curved side edges (like the reference) ============ -->
+  <!-- issuer records hash on-chain, right side -->
+  <path d="M 402,55 C 590,140 596,470 414,640 " fill="none" stroke="#000" stroke-width="1.3" marker-end="url(#o)"/>
+  <text x="588" y="360" text-anchor="middle" font-size="13" fill="#000" transform="rotate(-90 588 360)">Record keccak-256 Hash (MetaMask)</text>
+
+  <!-- master key note, left side, feeding both encrypt & decrypt -->
+  <rect x="28" y="300" width="120" height="74" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <circle cx="56" cy="326" r="9" fill="none" stroke="#000" stroke-width="1.8"/>
+  <line x1="63" y1="326" x2="86" y2="326" stroke="#000" stroke-width="1.8"/>
+  <line x1="76" y1="326" x2="76" y2="333" stroke="#000" stroke-width="1.8"/>
+  <line x1="84" y1="326" x2="84" y2="335" stroke="#000" stroke-width="1.8"/>
+  <text x="88" y="352" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#000">MASTER KEY</text>
+  <text x="88" y="366" text-anchor="middle" font-size="10" fill="#000">server-only secret</text>
+  <path d="M 100,300 C 120,240 180,210 292,203 " fill="none" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#o)"/>
+  <path d="M 100,374 C 120,440 180,480 288,494 " fill="none" stroke="#000" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#o)"/>
+</svg>

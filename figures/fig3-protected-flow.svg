@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 600" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="8" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="980" height="600" fill="#ffffff"/>
+  <text x="490" y="30" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">Protected Tier — Create &amp; Open</text>
+
+  <!-- lane headers -->
+  <rect x="60" y="48" width="180" height="40" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="150" y="73" text-anchor="middle" font-size="13" fill="#0f172a">Owner browser</text>
+  <rect x="400" y="48" width="180" height="40" rx="8" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="490" y="73" text-anchor="middle" font-size="13" fill="#0f172a">Server</text>
+  <rect x="740" y="48" width="180" height="40" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="830" y="73" text-anchor="middle" font-size="13" fill="#0f172a">Recipient browser</text>
+
+  <!-- lifelines -->
+  <line x1="150" y1="88" x2="150" y2="572" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="490" y1="88" x2="490" y2="572" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="830" y1="88" x2="830" y2="572" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+
+  <!-- CREATE band -->
+  <text x="40" y="120" font-size="12" font-weight="700" fill="#1d4ed8" transform="rotate(0)">CREATE</text>
+
+  <!-- 1 owner->server -->
+  <line x1="150" y1="138" x2="488" y2="138" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="320" y="131" text-anchor="middle" font-size="11" fill="#334155">1. fetch + decrypt P  (View path: wallet sig / passphrase)</text>
+
+  <!-- 2 owner->server -->
+  <line x1="150" y1="176" x2="488" y2="176" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="320" y="169" text-anchor="middle" font-size="11" fill="#334155">2. POST /api/shares  (multipart: plaintext P, options)</text>
+
+  <!-- 3 server self box -->
+  <rect x="350" y="194" width="280" height="62" rx="8" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="490" y="214" text-anchor="middle" font-size="11" fill="#0f172a">3.  k_s ← random;  B_s = GCM(k_s, P)</text>
+  <text x="490" y="230" text-anchor="middle" font-size="11" fill="#0f172a">W_s = wrap(k_s, K_w);  pin B_s → IPFS</text>
+  <text x="490" y="246" text-anchor="middle" font-size="11" fill="#0f172a">store W_s, H(token), expiry, gate</text>
+
+  <!-- 4 server->owner -->
+  <line x1="490" y1="284" x2="152" y2="284" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="320" y="277" text-anchor="middle" font-size="11" fill="#334155">4. return  /share/:id#t=&lt;token&gt;</text>
+
+  <!-- OPEN band -->
+  <line x1="30" y1="312" x2="950" y2="312" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="40" y="334" font-size="12" font-weight="700" fill="#059669">OPEN</text>
+
+  <!-- 5 recipient->server -->
+  <line x1="830" y1="352" x2="492" y2="352" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="660" y="345" text-anchor="middle" font-size="11" fill="#334155">5. GET /share/:id ; POST /open { token }</text>
+
+  <!-- 6 server self box -->
+  <rect x="350" y="372" width="280" height="62" rx="8" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="490" y="392" text-anchor="middle" font-size="11" fill="#0f172a">6. verify H(token), expiry, gate, view-cap</text>
+  <text x="490" y="408" text-anchor="middle" font-size="11" fill="#0f172a">unwrap DEK with M; decrypt B_s</text>
+  <text x="490" y="424" text-anchor="middle" font-size="11" fill="#0f172a">watermark (images)</text>
+
+  <!-- 7 server->recipient -->
+  <line x1="490" y1="462" x2="828" y2="462" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="660" y="455" text-anchor="middle" font-size="11" fill="#334155">7. watermarked plaintext (view-only)</text>
+
+  <text x="490" y="556" text-anchor="middle" font-size="11.5" fill="#334155">Server decrypts only transiently during an authorised view; plaintext is never persisted.</text>
+</svg>

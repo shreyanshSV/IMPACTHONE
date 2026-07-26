@@ -1,0 +1,19 @@
+sequenceDiagram
+  autonumber
+  participant O as Owner browser
+  participant S as Server
+  participant R as Recipient browser
+  rect rgb(239,246,255)
+  note over O,S: CREATE
+  O->>S: fetch + decrypt P (View path: wallet sig / passphrase)
+  O->>S: POST /api/shares (multipart: plaintext P, options)
+  S->>S: k_s = random; B_s = GCM(k_s, P); W_s = wrap(k_s, K_w); pin B_s to IPFS; store W_s, H(token)
+  S-->>O: return /share/:id#t=token
+  end
+  rect rgb(236,253,245)
+  note over R,S: OPEN
+  R->>S: GET /share/:id ; POST /open {token}
+  S->>S: verify H(token), expiry, gate, view-cap; unwrap DEK with M; decrypt B_s; watermark (images)
+  S-->>R: watermarked plaintext (view-only)
+  end
+  note over S: Server decrypts only transiently; plaintext never persisted

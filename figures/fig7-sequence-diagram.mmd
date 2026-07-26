@@ -1,0 +1,42 @@
+sequenceDiagram
+  participant I as Issuer
+  participant U as User
+  participant S as DocVerify Server
+  participant P as IPFS
+  participant B as Blockchain
+  participant E as External Viewer
+
+  rect rgb(245,245,245)
+  note over I,B: 1. PUBLISH
+  I->>S: upload document
+  S->>P: watermark + encrypt, pin file
+  P-->>S: return CID
+  I->>B: record keccak-256 hash on-chain (MetaMask)
+  S-->>U: notify - document received
+  end
+
+  rect rgb(255,255,255)
+  note over U,S: 2. VIEW
+  U->>S: login - email + OTP
+  U->>S: open document
+  S->>P: fetch ciphertext
+  S-->>U: decrypt (AES-256) and display
+  end
+
+  rect rgb(245,245,245)
+  note over U,B: 3. AUTHENTICITY CHECK
+  U->>S: upload file to check
+  S->>B: 4-layer check - hash, watermark, pHash, chain record
+  B-->>S: fingerprint matches
+  S-->>U: VERIFIED (+ WhatsApp / email alert)
+  end
+
+  rect rgb(255,255,255)
+  note over U,E: 4. SHARE
+  U->>S: create expiring share link
+  S-->>U: private link (secret token)
+  U->>E: send link (any channel)
+  E->>S: open link - token + email code
+  S-->>E: watermarked view-only copy
+  note over S,E: expiry / revoke destroys the key - link dead forever
+  end

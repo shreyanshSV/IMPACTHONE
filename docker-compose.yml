@@ -1,0 +1,33 @@
+# ============================================================================
+#  DocVerify — VPS deployment (app + invisible-watermark service)
+# ----------------------------------------------------------------------------
+#  - App is published ONLY on localhost:5000; nginx (on the host) terminates
+#    HTTPS for your domain and proxies to it.
+#  - The watermark service is internal-only (no published port) — the app
+#    reaches it as http://watermark:8100 on the compose network.
+#  - Secrets come from docV/.env on the SERVER (never committed, never baked
+#    into images — see docV/.dockerignore).
+#
+#  Run:  docker compose up -d --build
+# ============================================================================
+services:
+  app:
+    build: ./docV
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:3000"          # host-local only; nginx proxies to this
+    env_file:
+      - ./docV/.env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      OCR_SERVICE_URL: "http://watermark:8100"
+      # Public URL used in QR links + emails — set your real domain:
+      RENDER_APP_URL: "https://YOUR_DOMAIN"
+    depends_on:
+      - watermark
+
+  watermark:
+    build: ./docV/ocr-service
+    restart: unless-stopped
+    # no ports: internal-only on the compose network

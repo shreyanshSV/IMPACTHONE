@@ -1,0 +1,1504 @@
+/* ============================================================================
+   DOGSTUDIO-STYLE MOTION + DESIGN LAYER  (DocVerify)
+   Immersive landing: preloader, custom cursor, smooth-scroll reveals,
+   kinetic type, marquees, magnetic buttons, WebGL hero, image reveals.
+   Build-free — loaded after Tailwind. Only scoped to the new landing
+   (.ds-scope) so the functional dashboard/auth keep working.
+   ========================================================================== */
+
+:root {
+  --ds-bg: #05080d;
+  --ds-bg-2: #0a0f17;
+  --ds-ink: #f4f6f8;
+  --ds-muted: #8a96a6;
+  --ds-line: rgba(255, 255, 255, 0.1);
+  --ds-accent: #0ea5e9;   /* brand sky */
+  --ds-accent-2: #10b981; /* emerald */
+  --ds-gold: #f5b301;
+  --ds-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---- type system (aggressive sci-fi cyberpunk) ---- */
+  --font-display: "Orbitron", "Syne", sans-serif; /* headings */
+  --font-nav: "Syncopate", "Orbitron", sans-serif; /* nav / menu / rail */
+  --font-num: "Rajdhani", sans-serif; /* big metrics */
+  --font-mono: "Share Tech Mono", monospace; /* hashes / addresses */
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+/* ---- fonts ---------------------------------------------------------------- */
+/* Syne = bold grotesque display; Inter for body (already loaded) */
+
+.ds-scope {
+  font-family: "Inter", system-ui, sans-serif;
+}
+.ds-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+/* ============================================================================
+   CUSTOM CURSOR
+   ========================================================================== */
+.ds-cursor,
+.ds-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 999px;
+  will-change: transform;
+}
+.ds-cursor {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  transition: width 0.3s var(--ds-ease), height 0.3s var(--ds-ease),
+    background 0.3s var(--ds-ease), margin 0.3s var(--ds-ease),
+    border-color 0.3s var(--ds-ease), opacity 0.25s ease;
+}
+.ds-cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--ds-accent);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+  transition: opacity 0.25s ease;
+}
+/* hover: grow a tasteful ring (not a giant white blob), tint with accent */
+.ds-cursor.is-hover {
+  width: 62px;
+  height: 62px;
+  margin: -31px 0 0 -31px;
+  background: rgba(56, 189, 248, 0.14);
+  border-color: var(--ds-accent);
+}
+.ds-cursor.is-hover .ds-cursor-label {
+  opacity: 1;
+  transform: scale(1);
+}
+/* pressed feedback (transform is JS-controlled, so use bg/border) */
+.ds-cursor.is-down {
+  background: rgba(56, 189, 248, 0.28);
+  border-color: var(--ds-accent);
+}
+/* over text fields: become a thin I-beam-ish vertical bar */
+.ds-cursor.is-text {
+  width: 3px;
+  height: 26px;
+  margin: -13px 0 0 -1.5px;
+  border-radius: 2px;
+  background: var(--ds-accent);
+  border-color: transparent;
+}
+.ds-cursor.is-text + .ds-cursor-dot,
+.ds-cursor.is-text ~ .ds-cursor-dot {
+  opacity: 0;
+}
+.ds-cursor-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.3s ease, transform 0.3s var(--ds-ease);
+}
+.ds-cursor.is-hidden,
+.ds-cursor-dot.is-hidden {
+  opacity: 0;
+}
+/* Hide the native cursor app-wide whenever the custom cursor is live (.ds-anim
+   is only set when the motion script runs on a fine pointer). If JS is off or
+   the cursor isn't created, the native cursor stays — no "missing cursor". */
+@media (hover: hover) and (pointer: fine) {
+  html.ds-anim,
+  html.ds-anim * {
+    cursor: none !important;
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .ds-cursor,
+  .ds-cursor-dot {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   PRELOADER
+   ========================================================================== */
+.ds-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--ds-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.ds-preloader__count {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(4rem, 18vw, 16rem);
+  line-height: 1;
+  color: var(--ds-ink);
+  overflow: hidden;
+}
+.ds-preloader__bar {
+  width: min(60vw, 420px);
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+.ds-preloader__bar span {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--ds-accent), var(--ds-accent-2));
+}
+.ds-preloader__label {
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+/* curtain panels for the reveal */
+.ds-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+.ds-curtain span {
+  background: var(--ds-bg);
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+/* ============================================================================
+   LANDING SHELL / SECTIONS
+   ========================================================================== */
+.ds-scope {
+  background: var(--ds-bg);
+  color: var(--ds-ink);
+  overflow-x: clip;
+  position: relative;
+}
+.ds-noise {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.ds-section {
+  position: relative;
+  z-index: 3;
+  padding: clamp(5rem, 12vw, 11rem) clamp(1.25rem, 5vw, 5rem);
+}
+.ds-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* eyebrow / section index */
+.ds-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  margin-bottom: 1.75rem;
+}
+.ds-eyebrow::before {
+  content: "";
+  width: 30px;
+  height: 1px;
+  background: var(--ds-accent);
+}
+
+/* ---- NAV ----------------------------------------------------------------- */
+.ds-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem clamp(1.25rem, 5vw, 5rem);
+  mix-blend-mode: difference;
+}
+.ds-nav__brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.ds-nav__brand b {
+  color: var(--ds-accent);
+}
+.ds-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.ds-nav__link {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  color: #fff;
+  position: relative;
+}
+.ds-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 1px;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s var(--ds-ease);
+}
+.ds-nav__link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+@media (max-width: 768px) {
+  .ds-nav__links .ds-nav__link:not(.ds-nav__cta) {
+    display: none;
+  }
+}
+
+/* ---- HERO ---------------------------------------------------------------- */
+.ds-hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7rem clamp(1.25rem, 5vw, 5rem) 4rem;
+  overflow: hidden;
+}
+.ds-hero__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.ds-hero__canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+.ds-hero__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(
+      120% 90% at 50% 0%,
+      transparent 35%,
+      var(--ds-bg) 92%
+    ),
+    linear-gradient(180deg, rgba(5, 8, 13, 0.35), rgba(5, 8, 13, 0.65));
+}
+.ds-hero__inner {
+  position: relative;
+  z-index: 3;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+.ds-hero__title {
+  font-size: clamp(3.2rem, 13vw, 13rem);
+  margin: 0;
+}
+.ds-hero__title .ds-line {
+  display: block;
+  overflow: hidden;
+}
+.ds-hero__title .ds-line > span {
+  display: block;
+}
+/* hidden-until-animated states only apply when the motion script is live */
+.ds-anim .ds-hero__title .ds-line > span {
+  transform: translateY(110%);
+}
+.ds-hero__title .ds-outline {
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.55);
+  color: transparent;
+}
+.ds-hero__title .ds-accent {
+  background: linear-gradient(105deg, var(--ds-accent), var(--ds-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ds-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: clamp(2rem, 5vw, 4rem);
+}
+.ds-hero__lead {
+  max-width: 30ch;
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--ds-muted);
+}
+.ds-scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.ds-scroll-cue i {
+  width: 1px;
+  height: 46px;
+  background: linear-gradient(var(--ds-accent), transparent);
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+.ds-scroll-cue i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  animation: dsScroll 1.8s var(--ds-ease) infinite;
+}
+@keyframes dsScroll {
+  0% { transform: translateY(-100%); }
+  60%, 100% { transform: translateY(100%); }
+}
+
+/* ---- MARQUEE ------------------------------------------------------------- */
+.ds-marquee {
+  position: relative;
+  z-index: 3;
+  overflow: hidden;
+  border-top: 1px solid var(--ds-line);
+  border-bottom: 1px solid var(--ds-line);
+  padding: 1.4rem 0;
+  background: var(--ds-bg);
+}
+.ds-marquee__track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+}
+.ds-marquee__track span {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  letter-spacing: -0.01em;
+  padding: 0 1.5rem;
+  color: var(--ds-ink);
+}
+.ds-marquee__track span em {
+  font-style: normal;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+  color: transparent;
+}
+.ds-marquee__track span i {
+  color: var(--ds-accent);
+  font-style: normal;
+  padding: 0 1.5rem;
+}
+
+/* ---- MANIFESTO / BIG TEXT ----------------------------------------------- */
+.ds-manifesto {
+  font-size: clamp(1.8rem, 5.2vw, 5rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  max-width: 20ch;
+}
+.ds-manifesto .ds-word {
+  display: inline-block;
+  transition: opacity 0.3s ease;
+}
+.ds-anim .ds-manifesto .ds-word {
+  opacity: 0.16;
+}
+.ds-manifesto .ds-em {
+  color: var(--ds-accent);
+}
+
+/* ---- FEATURES (5-layer) -------------------------------------------------- */
+.ds-feature {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  padding: clamp(2rem, 4vw, 3.25rem) 0;
+  border-top: 1px solid var(--ds-line);
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .ds-feature {
+    grid-template-columns: 0.5fr 1.5fr 2fr 0.6fr;
+    gap: 2.5rem;
+    align-items: center;
+  }
+}
+.ds-feature:last-child {
+  border-bottom: 1px solid var(--ds-line);
+}
+.ds-feature__num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--ds-accent);
+}
+.ds-feature__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.ds-feature__desc {
+  color: var(--ds-muted);
+  line-height: 1.65;
+  max-width: 52ch;
+}
+.ds-feature__tag {
+  justify-self: start;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ds-ink);
+  border: 1px solid var(--ds-line);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  white-space: nowrap;
+}
+@media (min-width: 900px) {
+  .ds-feature__tag { justify-self: end; }
+}
+.ds-feature:hover .ds-feature__title {
+  color: var(--ds-accent);
+  transition: color 0.4s var(--ds-ease);
+}
+
+/* ---- STEPS --------------------------------------------------------------- */
+.ds-steps {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 800px) {
+  .ds-steps { grid-template-columns: repeat(3, 1fr); }
+}
+.ds-step {
+  border: 1px solid var(--ds-line);
+  border-radius: 18px;
+  padding: 2rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+  transition: transform 0.5s var(--ds-ease), border-color 0.4s ease;
+}
+.ds-step:hover {
+  transform: translateY(-6px);
+  border-color: rgba(14, 165, 233, 0.45);
+}
+.ds-step__k {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.5rem;
+  -webkit-text-stroke: 1px var(--ds-accent);
+  color: transparent;
+  display: block;
+  margin-bottom: 1.5rem;
+}
+.ds-step h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+.ds-step p {
+  color: var(--ds-muted);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* ---- STATS --------------------------------------------------------------- */
+.ds-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.5rem 1rem;
+  border-top: 1px solid var(--ds-line);
+  padding-top: 3.5rem;
+}
+@media (min-width: 800px) {
+  .ds-stats { grid-template-columns: repeat(4, 1fr); }
+}
+.ds-stat__num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  line-height: 1;
+  background: linear-gradient(160deg, #fff, var(--ds-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ds-stat__label {
+  margin-top: 0.75rem;
+  color: var(--ds-muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+/* ---- PORTAL CARDS -------------------------------------------------------- */
+.ds-portals {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 900px) {
+  .ds-portals { grid-template-columns: 1fr 1fr; }
+}
+.ds-portal {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid var(--ds-line);
+  padding: clamp(2rem, 4vw, 3.5rem);
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--ds-bg-2);
+  isolation: isolate;
+  transition: transform 0.6s var(--ds-ease);
+}
+.ds-portal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transform: scale(1.1);
+  transition: opacity 0.6s var(--ds-ease), transform 0.8s var(--ds-ease);
+  background-size: cover;
+  background-position: center;
+}
+.ds-portal--user::before {
+  background-image: linear-gradient(180deg, rgba(2,6,23,0.55), rgba(2,6,23,0.85)),
+    url("https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1600&auto=format&fit=crop");
+}
+.ds-portal--issuer::before {
+  background-image: linear-gradient(180deg, rgba(6,16,12,0.55), rgba(6,16,12,0.88)),
+    url("https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1600&auto=format&fit=crop");
+}
+.ds-portal:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+.ds-portal:hover {
+  transform: translateY(-6px);
+}
+.ds-portal__k {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+.ds-portal__desc {
+  color: var(--ds-muted);
+  max-width: 36ch;
+  margin-top: 1rem;
+  line-height: 1.6;
+}
+.ds-portal__cta {
+  margin-top: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  align-self: flex-start;
+}
+.ds-portal__cta .ds-arrow {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-line);
+  transition: background 0.4s var(--ds-ease), color 0.4s var(--ds-ease),
+    transform 0.4s var(--ds-ease);
+}
+.ds-portal:hover .ds-portal__cta .ds-arrow {
+  background: #fff;
+  color: #000;
+  transform: rotate(-45deg);
+}
+
+/* ---- MAGNETIC BUTTON ----------------------------------------------------- */
+.ds-magnetic {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.1rem 2.25rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: none;
+  overflow: hidden;
+  will-change: transform;
+}
+.ds-magnetic span {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+}
+.ds-magnetic::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(105deg, var(--ds-accent), var(--ds-accent-2));
+  transform: translateY(101%);
+  transition: transform 0.5s var(--ds-ease);
+}
+.ds-magnetic:hover::after {
+  transform: translateY(0);
+}
+.ds-magnetic:hover span {
+  color: #fff;
+}
+.ds-magnetic--ghost {
+  background: transparent;
+  color: #fff;
+  border: 1px solid var(--ds-line);
+}
+
+/* ---- FOOTER CTA ---------------------------------------------------------- */
+.ds-footer {
+  position: relative;
+  z-index: 3;
+  padding: clamp(5rem, 10vw, 9rem) clamp(1.25rem, 5vw, 5rem) 3rem;
+  border-top: 1px solid var(--ds-line);
+  text-align: center;
+}
+.ds-footer__big {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(3rem, 16vw, 16rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  background: linear-gradient(180deg, #fff 30%, rgba(255,255,255,0.15));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ds-footer__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ds-line);
+  color: var(--ds-muted);
+  font-size: 0.85rem;
+}
+
+/* ---- reveal primitives (driven by GSAP, with CSS fallback) -------------- */
+.ds-anim .ds-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+}
+.ds-anim .ds-fade {
+  opacity: 0;
+}
+
+/* ============================================================================
+   AUTH PAGE — dark cinematic re-theme (overrides Tailwind utilities in place)
+   Applied via #authPage.ds-auth so the working form markup is untouched.
+   ========================================================================== */
+.ds-auth {
+  background: var(--ds-bg) !important;
+  /* first layer = cursor-following spotlight (driven by --mx/--my from JS) */
+  background-image: radial-gradient(
+      34rem 34rem at var(--mx, 50%) var(--my, 38%),
+      rgba(56, 189, 248, 0.22),
+      transparent 60%
+    ),
+    radial-gradient(
+      26rem 26rem at calc(100% - var(--mx, 50%)) var(--my, 50%),
+      rgba(16, 185, 129, 0.16),
+      transparent 62%
+    ),
+    radial-gradient(60rem 50rem at 80% -10%, rgba(14, 165, 233, 0.16), transparent 60%),
+    radial-gradient(50rem 50rem at -10% 110%, rgba(16, 185, 129, 0.12), transparent 55%),
+    linear-gradient(160deg, #05080d, #0a0f17) !important;
+  font-family: "Inter", sans-serif;
+}
+/* dim the light grid overlay */
+.ds-auth > .absolute.inset-0 {
+  opacity: 0.04;
+}
+/* the card */
+.ds-auth .bg-white {
+  background: rgba(255, 255, 255, 0.045) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.85);
+}
+/* card header */
+.ds-auth .bg-brand-900 {
+  background: linear-gradient(135deg, #0c4a6e, #064e3b) !important;
+}
+.ds-auth h2.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+/* tab group */
+.ds-auth .bg-slate-100 {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.ds-auth .bg-slate-100 .bg-white {
+  background: linear-gradient(105deg, var(--ds-accent), var(--ds-accent-2)) !important;
+  color: #001018 !important;
+  box-shadow: 0 6px 18px -6px rgba(14, 165, 233, 0.6);
+  backdrop-filter: none;
+}
+.ds-auth .text-slate-500 { color: var(--ds-muted) !important; }
+.ds-auth .text-slate-400 { color: #6b7787 !important; }
+.ds-auth .text-brand-900 { color: var(--ds-ink) !important; }
+.ds-auth .text-brand-700 { color: var(--ds-accent) !important; }
+/* inputs */
+.ds-auth input.bg-slate-50,
+.ds-auth .bg-slate-50 {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--ds-ink) !important;
+}
+.ds-auth input::placeholder { color: #5b6675 !important; }
+.ds-auth input:focus {
+  border-color: rgba(14, 165, 233, 0.6) !important;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.14) !important;
+}
+/* primary submit buttons inside auth keep brand gradient but punchier */
+.ds-auth .btn-primary,
+.ds-auth button[type="submit"] {
+  background: linear-gradient(105deg, var(--ds-accent), var(--ds-accent-2)) !important;
+  color: #001018 !important;
+  font-weight: 700;
+}
+
+/* ============================================================================
+   DASHBOARD / APP — dark Dogstudio re-theme (.ds-dark scope)
+   Remaps the light Tailwind utilities used in static + JS-injected markup to a
+   single dark palette so the dashboard matches the immersive landing.
+   Scoped to #dashboard.ds-dark so the working markup/logic is untouched.
+   ========================================================================== */
+.ds-dark {
+  --d-bg: #05080d;
+  --d-surface: #0a0f17;
+  --d-card: rgba(255, 255, 255, 0.045);
+  --d-card-2: rgba(255, 255, 255, 0.025);
+  --d-line: rgba(255, 255, 255, 0.09);
+  --d-ink: #f4f6f8;
+  --d-muted: #8a96a6;
+  --d-faint: #6b7787;
+  --d-sky: #38bdf8;
+  --d-emerald: #34d399;
+
+  background: var(--d-bg) !important;
+  background-image: radial-gradient(
+      40rem 40rem at var(--mx, 50%) var(--my, 40%),
+      rgba(56, 189, 248, 0.1),
+      transparent 60%
+    ),
+    radial-gradient(55rem 45rem at 88% -8%, rgba(14, 165, 233, 0.1), transparent 60%),
+    radial-gradient(50rem 50rem at -8% 108%, rgba(16, 185, 129, 0.08), transparent 55%) !important;
+  background-attachment: fixed !important;
+  color: var(--d-ink);
+}
+
+/* ---- surfaces ---- */
+.ds-dark .bg-white,
+.ds-dark .bg-slate-50,
+.ds-dark .bg-slate-100 {
+  background-color: var(--d-card) !important;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-color: var(--d-line) !important;
+}
+.ds-dark aside.bg-white,
+.ds-dark #sidebar {
+  background: rgba(8, 12, 19, 0.92) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-color: var(--d-line) !important;
+}
+.ds-dark .bg-slate-300 { background-color: rgba(255, 255, 255, 0.14) !important; }
+.ds-dark .bg-black { background-color: #02040a !important; }
+
+/* soft tint chips → dark tinted */
+.ds-dark .bg-brand-50 { background-color: rgba(56, 189, 248, 0.12) !important; }
+.ds-dark .bg-emerald-50 { background-color: rgba(52, 211, 153, 0.12) !important; }
+.ds-dark .bg-red-50 { background-color: rgba(248, 113, 113, 0.12) !important; }
+
+/* keep primary action buttons vivid on dark */
+.ds-dark .bg-brand-600,
+.ds-dark .bg-green-600 {
+  background: linear-gradient(105deg, #0ea5e9, #10b981) !important;
+  color: #001018 !important;
+  backdrop-filter: none;
+}
+
+/* ---- text ---- */
+.ds-dark .text-slate-900,
+.ds-dark .text-slate-800,
+.ds-dark .text-slate-700,
+.ds-dark .text-brand-900 { color: var(--d-ink) !important; }
+.ds-dark .text-slate-600,
+.ds-dark .text-slate-500 { color: var(--d-muted) !important; }
+.ds-dark .text-slate-400 { color: var(--d-faint) !important; }
+.ds-dark .text-brand-600,
+.ds-dark .text-brand-700,
+.ds-dark .text-blue-600 { color: var(--d-sky) !important; }
+.ds-dark .text-emerald-600,
+.ds-dark .text-emerald-700 { color: var(--d-emerald) !important; }
+.ds-dark .text-red-600,
+.ds-dark .text-red-700 { color: #f87171 !important; }
+
+/* ---- borders ---- */
+.ds-dark .border-slate-100,
+.ds-dark .border-slate-200,
+.ds-dark .border-slate-200\/70,
+.ds-dark .border-white { border-color: var(--d-line) !important; }
+.ds-dark .border-red-200 { border-color: rgba(248, 113, 113, 0.3) !important; }
+.ds-dark .border-emerald-200 { border-color: rgba(52, 211, 153, 0.3) !important; }
+.ds-dark .border-brand-300,
+.ds-dark .border-brand-600 { border-color: rgba(56, 189, 248, 0.35) !important; }
+
+/* ---- hover utilities (prevent white flashes on dark) ---- */
+.ds-dark .hover\:bg-slate-50:hover,
+.ds-dark .hover\:bg-slate-100:hover,
+.ds-dark .hover\:bg-slate-200:hover { background-color: rgba(255, 255, 255, 0.07) !important; }
+.ds-dark .hover\:bg-red-50:hover { background-color: rgba(248, 113, 113, 0.14) !important; }
+.ds-dark .hover\:text-brand-500:hover,
+.ds-dark .hover\:text-brand-700:hover { color: var(--d-sky) !important; }
+
+/* ---- inputs ---- */
+.ds-dark input,
+.ds-dark textarea,
+.ds-dark select {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--d-line) !important;
+  color: var(--d-ink) !important;
+}
+.ds-dark input::placeholder,
+.ds-dark textarea::placeholder { color: var(--d-faint) !important; }
+.ds-dark input:focus,
+.ds-dark textarea:focus,
+.ds-dark select:focus {
+  border-color: rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.14) !important;
+}
+
+/* ---- component classes from style.css ---- */
+.ds-dark .nav-item.active {
+  background-color: rgba(56, 189, 248, 0.14) !important;
+  color: var(--d-sky) !important;
+}
+.ds-dark .nav-item:hover { color: var(--d-ink); }
+.ds-dark .stat-card:hover,
+.ds-dark .document-card:hover {
+  box-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(56, 189, 248, 0.25) !important;
+}
+.ds-dark .file-upload-area:hover {
+  background-color: rgba(56, 189, 248, 0.08) !important;
+  border-color: rgba(56, 189, 248, 0.5) !important;
+}
+.ds-dark .file-upload-area.dragover {
+  background-color: rgba(56, 189, 248, 0.14) !important;
+  border-color: var(--d-sky) !important;
+}
+/* status pills */
+.ds-dark .status-verified {
+  color: var(--d-emerald) !important;
+  background-color: rgba(52, 211, 153, 0.14) !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+.ds-dark .status-rejected {
+  color: #f87171 !important;
+  background-color: rgba(248, 113, 113, 0.14) !important;
+  border-color: rgba(248, 113, 113, 0.3) !important;
+}
+.ds-dark .status-pending {
+  color: #fbbf24 !important;
+  background-color: rgba(251, 191, 36, 0.14) !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+}
+/* dashed dividers / shadows that assume light bg */
+.ds-dark .border-dashed { border-color: var(--d-line) !important; }
+.ds-dark .shadow-sm,
+.ds-dark .shadow,
+.ds-dark .shadow-md,
+.ds-dark .shadow-lg,
+.ds-dark .shadow-xl {
+  box-shadow: 0 24px 60px -34px rgba(0, 0, 0, 0.9) !important;
+}
+/* skeleton shimmer (light) → dark */
+.ds-dark .bg-slate-200,
+.ds-dark .animate-pulse .bg-slate-100 { background-color: rgba(255, 255, 255, 0.06) !important; }
+
+/* ============================================================================
+   DOGSTUDIO FULLSCREEN MENU (replaces the dashboard sidebar)
+   ========================================================================== */
+/* hide the old persistent sidebar + its mobile overlay */
+.ds-dark #sidebar,
+.ds-dark #sidebar-overlay {
+  display: none !important;
+}
+
+/* ---- trigger button in the header ---- */
+.ds-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 1.1rem 0.55rem 0.85rem;
+  border: 1px solid var(--ds-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ds-ink);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: background 0.35s var(--ds-ease), border-color 0.35s var(--ds-ease);
+}
+.ds-menu-trigger:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.ds-menu-trigger__bars {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 20px;
+}
+.ds-menu-trigger__bars i {
+  height: 2px;
+  width: 100%;
+  background: currentColor;
+  border-radius: 2px;
+  transition: transform 0.35s var(--ds-ease), width 0.35s var(--ds-ease);
+}
+.ds-menu-trigger:hover .ds-menu-trigger__bars i:last-child {
+  width: 60%;
+}
+.ds-menu-trigger__label {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+/* ---- the overlay ---- */
+.ds-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.55s var(--ds-ease), visibility 0.55s var(--ds-ease);
+}
+.ds-menu.is-open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+.ds-menu__bg {
+  position: absolute;
+  inset: 0;
+  background: #05080d;
+  background-image: radial-gradient(
+      36rem 36rem at var(--mx, 50%) var(--my, 40%),
+      rgba(56, 189, 248, 0.2),
+      transparent 60%
+    ),
+    radial-gradient(
+      30rem 30rem at calc(100% - var(--mx, 50%)) calc(100% - var(--my, 50%)),
+      rgba(16, 185, 129, 0.16),
+      transparent 62%
+    ),
+    linear-gradient(160deg, #05080d, #0a0f17);
+  transform: scale(1.04);
+  transition: transform 0.7s var(--ds-ease);
+}
+.ds-menu.is-open .ds-menu__bg {
+  transform: scale(1);
+}
+.ds-menu__inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1.5rem, 6vw, 6rem);
+  display: flex;
+  flex-direction: column;
+}
+.ds-menu__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 0.5rem 1rem;
+}
+.ds-menu__eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.ds-menu__close {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-line);
+  background: transparent;
+  transition: background 0.35s var(--ds-ease), transform 0.5s var(--ds-ease);
+}
+.ds-menu__close span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 2px;
+  background: var(--ds-ink);
+  border-radius: 2px;
+}
+.ds-menu__close span:first-child { transform: translate(-50%, -50%) rotate(45deg); }
+.ds-menu__close span:last-child { transform: translate(-50%, -50%) rotate(-45deg); }
+.ds-menu__close:hover { background: #fff; transform: rotate(90deg); }
+.ds-menu__close:hover span { background: #000; }
+
+/* ---- list ---- */
+.ds-menu__list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(0.1rem, 0.6vw, 0.4rem);
+}
+.ds-menu__item {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  padding: clamp(0.15rem, 0.8vw, 0.5rem) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: padding-left 0.4s var(--ds-ease);
+}
+.ds-menu__idx {
+  font-family: var(--font-nav);
+  font-weight: 700;
+  font-size: clamp(0.62rem, 0.9vw, 0.78rem);
+  letter-spacing: 0.06em;
+  color: var(--ds-muted);
+  width: 3ch;
+  transition: color 0.4s var(--ds-ease);
+}
+.ds-menu__line {
+  overflow: hidden;
+  display: block;
+  flex: 1;
+}
+.ds-menu__label {
+  display: block;
+  font-family: var(--font-nav);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  font-size: clamp(1.15rem, 5vw, 4.2rem);
+  color: var(--ds-ink);
+  transform: translateY(110%);
+  transition: transform 0.7s var(--ds-ease), color 0.35s var(--ds-ease);
+}
+.ds-menu__arrow {
+  font-size: clamp(1.2rem, 2.4vw, 2rem);
+  color: var(--ds-accent);
+  opacity: 0;
+  transform: translate(-12px, 6px);
+  transition: opacity 0.35s var(--ds-ease), transform 0.4s var(--ds-ease);
+}
+/* staggered reveal on open */
+.ds-menu.is-open .ds-menu__label { transform: translateY(0); }
+.ds-menu.is-open .ds-menu__item:nth-child(1) .ds-menu__label { transition-delay: 0.06s; }
+.ds-menu.is-open .ds-menu__item:nth-child(2) .ds-menu__label { transition-delay: 0.12s; }
+.ds-menu.is-open .ds-menu__item:nth-child(3) .ds-menu__label { transition-delay: 0.18s; }
+.ds-menu.is-open .ds-menu__item:nth-child(4) .ds-menu__label { transition-delay: 0.24s; }
+.ds-menu.is-open .ds-menu__item:nth-child(5) .ds-menu__label { transition-delay: 0.30s; }
+.ds-menu.is-open .ds-menu__item:nth-child(6) .ds-menu__label { transition-delay: 0.36s; }
+.ds-menu.is-open .ds-menu__item:nth-child(7) .ds-menu__label { transition-delay: 0.42s; }
+.ds-menu.is-open .ds-menu__item:nth-child(8) .ds-menu__label { transition-delay: 0.48s; }
+/* hover */
+.ds-menu__item:hover { padding-left: clamp(0.5rem, 2vw, 1.75rem); }
+.ds-menu__item:hover .ds-menu__label { color: var(--ds-accent); }
+.ds-menu__item:hover .ds-menu__idx { color: var(--ds-accent); }
+.ds-menu__item:hover .ds-menu__arrow { opacity: 1; transform: translate(0, 0); }
+
+/* ---- footer (account) ---- */
+.ds-menu__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ds-line);
+}
+.ds-menu__account {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+.ds-menu__account .ds-menu__eyebrow { margin-right: 0.25rem; }
+.ds-menu__account button {
+  color: var(--ds-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  position: relative;
+  background: none;
+  border: none;
+  transition: color 0.3s var(--ds-ease);
+}
+.ds-menu__account button:hover { color: var(--ds-accent); }
+.ds-menu__account .ds-menu__signout { color: #f87171; }
+.ds-menu__account .ds-menu__signout:hover { color: #fca5a5; }
+.ds-menu__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: right;
+  color: var(--ds-muted);
+  font-size: 0.78rem;
+}
+/* lock background scroll when the menu is open */
+html.ds-menu-open,
+html.ds-menu-open body {
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  .ds-menu__foot { flex-direction: column; align-items: flex-start; }
+  .ds-menu__meta { text-align: left; }
+}
+
+/* active item highlight (used by the permanent rail) */
+.ds-menu__item.ds-active .ds-menu__label,
+.ds-menu__item.ds-active .ds-menu__idx { color: var(--ds-accent); }
+.ds-menu__item.ds-active { position: relative; }
+.ds-menu__item.ds-active::before {
+  content: "";
+  position: absolute;
+  left: -0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  background: linear-gradient(var(--ds-accent), var(--ds-emerald, #34d399));
+  border-radius: 4px;
+}
+
+/* ============================================================================
+   PERMANENT LEFT MENU RAIL (desktop) — combines the big menu INTO the dashboard
+   Below 1024px the same #dsMenu stays a slide-in drawer (toggled by MENU btn).
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .ds-dark #dsMenu.ds-menu {
+    position: sticky;
+    top: 0;
+    inset: auto;
+    z-index: 20;
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    flex: 0 0 auto;
+    width: clamp(248px, 22vw, 330px);
+    height: 100vh;
+    border-right: 1px solid var(--ds-line);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .ds-dark #dsMenu .ds-menu__bg { transform: none; }
+  .ds-dark #dsMenu .ds-menu__inner {
+    justify-content: flex-start;
+    height: 100%;
+    padding: 1.4rem 1.25rem 1.25rem;
+  }
+  .ds-dark #dsMenu .ds-menu__head { padding-block: 0.25rem 0.5rem; }
+  .ds-dark #dsMenu .ds-menu__close { display: none; }
+  .ds-dark #dsMenu .ds-menu__list {
+    flex: 1;
+    justify-content: flex-start;
+    gap: 0.05rem;
+    margin-top: 1rem;
+  }
+  .ds-dark #dsMenu .ds-menu__item { padding: 0.3rem 0; }
+  .ds-dark #dsMenu .ds-menu__label {
+    font-size: clamp(0.78rem, 0.92vw, 1rem);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    transform: none !important; /* always visible — no takeover reveal */
+    transition: color 0.3s var(--ds-ease);
+  }
+  .ds-dark #dsMenu .ds-menu__idx { font-size: 0.6rem; width: 2.2ch; }
+  .ds-dark #dsMenu .ds-menu__arrow { font-size: 1rem; }
+  .ds-dark #dsMenu .ds-menu__foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding-top: 1.1rem;
+  }
+  .ds-dark #dsMenu .ds-menu__account {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+  .ds-dark #dsMenu .ds-menu__meta { text-align: left; font-size: 0.72rem; }
+
+  /* the MENU button is only for the mobile drawer — hide on desktop */
+  .ds-dark .ds-menu-trigger { display: none; }
+}
+
+/* ============================================================================
+   TYPOGRAPHY APPLICATION — sci-fi cyberpunk font roles
+   ========================================================================== */
+/* dashboard section + page titles → Orbitron (headings) */
+.ds-dark h1,
+.ds-dark h2 {
+  font-family: var(--font-display) !important;
+  letter-spacing: 0.005em;
+}
+/* big numeric metrics in stat cards → Rajdhani (squared, condensed, bold) */
+.ds-dark .stat-card h3 {
+  font-family: var(--font-num) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+/* hashes / wallet addresses / IPFS CIDs → Share Tech Mono */
+.ds-dark .font-mono,
+.ds-scope .font-mono,
+.ds-auth .font-mono {
+  font-family: var(--font-mono) !important;
+}
+/* landing kinetic stats + marquee already use .ds-display (Orbitron); make the
+   landing stat numbers feel like a digital readout */
+.ds-stat__num {
+  font-family: var(--font-num);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+/* nav links on the landing → Syncopate-ish wide caps already handled by .ds-nav */
+.ds-eyebrow,
+.ds-feature__tag,
+.ds-menu__eyebrow {
+  font-family: var(--font-nav);
+}
+
+/* ============================================================================
+   DASHBOARD HOME ADD-ONS — dropzone, account icons, quick-action hover
+   ========================================================================== */
+/* Instant-verify dropzone (neon dashed, glows on hover / drag) */
+.ds-dropzone {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.4rem 1.75rem;
+  border: 2px dashed rgba(56, 189, 248, 0.4);
+  border-radius: 18px;
+  background: rgba(56, 189, 248, 0.04);
+  cursor: pointer;
+  transition: border-color 0.3s var(--ds-ease), background 0.3s var(--ds-ease),
+    box-shadow 0.3s var(--ds-ease), transform 0.3s var(--ds-ease);
+}
+.ds-dropzone:hover {
+  border-color: rgba(56, 189, 248, 0.7);
+  background: rgba(56, 189, 248, 0.07);
+  box-shadow: 0 0 40px -12px rgba(56, 189, 248, 0.5);
+}
+.ds-dropzone.dragover {
+  border-color: #38bdf8;
+  border-style: solid;
+  background: rgba(56, 189, 248, 0.12);
+  box-shadow: 0 0 60px -10px rgba(56, 189, 248, 0.7);
+  transform: scale(1.01);
+}
+.ds-dropzone__icon {
+  display: grid;
+  place-items: center;
+  height: 52px;
+  width: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0ea5e9, #10b981);
+  color: #001018;
+  flex: 0 0 auto;
+}
+.ds-dropzone__title { font-weight: 700; color: var(--ds-ink); }
+.ds-dropzone__hint { font-size: 0.85rem; color: var(--ds-muted); margin-top: 0.15rem; }
+
+/* account buttons in the rail get icons */
+.ds-menu__account button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.ds-menu__account button svg {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.85;
+  flex: 0 0 auto;
+}
+
+/* quick-action cards: lift + accent glow on hover */
+.ds-dark .action-grid button {
+  transition: transform 0.3s var(--ds-ease), border-color 0.3s var(--ds-ease),
+    box-shadow 0.3s var(--ds-ease);
+}
+.ds-dark .action-grid button:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  box-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* quick-action cards: lift + accent glow on hover (blueprint micro-interaction) */
+.ds-dark .action-grid > button {
+  transition: transform 0.4s var(--ds-ease), border-color 0.4s var(--ds-ease),
+    box-shadow 0.4s var(--ds-ease) !important;
+}
+.ds-dark .action-grid > button:hover {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  box-shadow: 0 22px 50px -26px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(56, 189, 248, 0.3) !important;
+}
+
+/* ============================================================================
+   ISSUER PORTAL — re-themed to match the sign-in/sign-up page
+   Same dark blue/teal palette + cursor-reactive glow + card tilt.
+   Remaps the gold/luxe "luxe" theme to sky/emerald, scoped to #..authPage/
+   #issuerDashboard via .ds-issuer so the markup/logic is untouched.
+   ========================================================================== */
+/* background = same blue/teal cursor-following spotlight as .ds-auth */
+.ds-issuer.luxe-bg,
+.ds-issuer .luxe-bg {
+  background-color: var(--ds-bg) !important;
+  background-image: radial-gradient(
+      34rem 34rem at var(--mx, 50%) var(--my, 38%),
+      rgba(56, 189, 248, 0.22),
+      transparent 60%
+    ),
+    radial-gradient(
+      26rem 26rem at calc(100% - var(--mx, 50%)) var(--my, 50%),
+      rgba(16, 185, 129, 0.16),
+      transparent 62%
+    ),
+    radial-gradient(60rem 50rem at 80% -10%, rgba(14, 165, 233, 0.15), transparent 60%),
+    radial-gradient(50rem 50rem at -10% 110%, rgba(16, 185, 129, 0.12), transparent 55%),
+    linear-gradient(160deg, #05080d, #0a0f17) !important;
+}
+
+/* gradient brand text ("Portal", "Original Document") → sky→teal.
+   Use background-image (NOT the `background` shorthand) so background-clip
+   isn't reset to border-box — otherwise the gradient fills the whole box
+   and the text reads as a solid block. */
+.ds-issuer .gold-text {
+  background-image: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 50%, #10b981 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+/* gold CTA → sky→emerald (same as the auth Create Account button) */
+.ds-issuer .btn-gold {
+  background: linear-gradient(135deg, #0ea5e9 0%, #10b981 100%) !important;
+  color: #001018 !important;
+  box-shadow: 0 12px 30px -10px rgba(14, 165, 233, 0.6) !important;
+}
+.ds-issuer .btn-gold:hover {
+  box-shadow: 0 16px 40px -10px rgba(14, 165, 233, 0.7) !important;
+}
+.ds-issuer .luxe-divider {
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4), transparent) !important;
+}
+.ds-issuer .luxe-input:focus {
+  border-color: rgba(56, 189, 248, 0.55) !important;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.14) !important;
+}
+.ds-issuer .luxe-hover:hover {
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 30px 80px -30px rgba(14, 165, 233, 0.45) !important;
+}
+
+/* gold utility classes → sky/teal (substring match covers /opacity variants) */
+.ds-issuer [class*="text-gold"] { color: #5fc8f7 !important; }
+.ds-issuer [class*="border-gold"] { border-color: rgba(56, 189, 248, 0.3) !important; }
+.ds-issuer [class*="ring-gold"] { --tw-ring-color: rgba(56, 189, 248, 0.45) !important; }
+.ds-issuer [class*="bg-gold-400/"] { background-color: rgba(56, 189, 248, 0.12) !important; }
+.ds-issuer .bg-gold-400 { background-color: #38bdf8 !important; }
+.ds-issuer [class*="from-gold"] {
+  --tw-gradient-from: rgba(56, 189, 248, 0.2) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(56, 189, 248, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+/* shadow that assumed gold glow */
+.ds-issuer [class*="shadow-[0_0_40px"] {
+  box-shadow: 0 0 40px -8px rgba(56, 189, 248, 0.5) !important;
+}
+
+/* reduced motion: show everything, kill heavy effects */
+@media (prefers-reduced-motion: reduce) {
+  .ds-reveal,
+  .ds-fade { opacity: 1 !important; transform: none !important; }
+  .ds-hero__title .ds-line > span { transform: none !important; }
+  .ds-manifesto .ds-word { opacity: 1 !important; }
+  .ds-cursor,
+  .ds-cursor-dot { display: none; }
+  .ds-scope, .ds-scope * { cursor: auto !important; }
+}

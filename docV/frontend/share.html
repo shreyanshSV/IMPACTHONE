@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Don't let this private page be indexed or referrer-leaked. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Secure Document · DocVerify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      body { font-family: Inter, system-ui, sans-serif; background: #05080d; }
+      /* DV3D — ambient depth (CSS-only for this standalone page) */
+      .dv-blob {
+        position: fixed; border-radius: 50%; filter: blur(70px);
+        opacity: .12; pointer-events: none; z-index: 0;
+        animation: dvDrift 30s cubic-bezier(.16,1,.3,1) infinite alternate;
+      }
+      .dv-blob--a { width: 44vmax; height: 44vmax; top: -18vmax; left: -10vmax;
+        background: radial-gradient(circle, #0ea5e9, transparent 65%); }
+      .dv-blob--b { width: 40vmax; height: 40vmax; bottom: -18vmax; right: -10vmax;
+        background: radial-gradient(circle, #10b981, transparent 65%);
+        animation-duration: 38s; animation-delay: -12s; }
+      @keyframes dvDrift {
+        0% { transform: translate3d(0,0,0) scale(1); }
+        100% { transform: translate3d(-4vmax,5vmax,0) scale(1.1); }
+      }
+      header, main, footer { position: relative; z-index: 1; }
+      .dv-glass {
+        background: rgba(255,255,255,.045) !important;
+        border: 1px solid rgba(255,255,255,.09) !important;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 24px 60px -18px rgba(0,0,0,.6);
+        backdrop-filter: blur(14px) saturate(1.2);
+        -webkit-backdrop-filter: blur(14px) saturate(1.2);
+      }
+      @media (prefers-reduced-motion: reduce) { .dv-blob { animation: none; } }
+      /* View-only deterrents: discourage casual saving/selection (not a substitute
+         for the per-viewer watermark, which makes any leak traceable). */
+      .no-save img, .no-save iframe, .no-save embed {
+        -webkit-user-select: none; user-select: none; -webkit-user-drag: none;
+      }
+      .spin { animation: spin 0.8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div class="dv-blob dv-blob--a" aria-hidden="true"></div>
+    <div class="dv-blob dv-blob--b" aria-hidden="true"></div>
+    <header class="border-b border-white/10 bg-slate-900/60 backdrop-blur">
+      <div class="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
+        <span class="h-9 w-9 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-400/20 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </span>
+        <div>
+          <p class="font-bold tracking-tight">DocVerify</p>
+          <p class="text-xs text-slate-400 -mt-0.5">Secure document share</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 py-8">
+      <!-- State: loading -->
+      <div id="state-loading" class="flex flex-col items-center justify-center py-24 text-slate-400">
+        <div class="spin h-10 w-10 rounded-full border-2 border-slate-600 border-t-emerald-400 mb-4"></div>
+        <p class="text-sm">Opening secure document…</p>
+      </div>
+
+      <!-- State: message (expired / revoked / error) -->
+      <div id="state-message" class="hidden">
+        <div class="max-w-md mx-auto text-center py-20">
+          <div id="msg-icon" class="mx-auto mb-5 h-16 w-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl"></div>
+          <h1 id="msg-title" class="text-xl font-bold mb-2"></h1>
+          <p id="msg-body" class="text-slate-400 text-sm"></p>
+        </div>
+      </div>
+
+      <!-- State: gate prompt (Phase 2 — email code / password) -->
+      <div id="state-gate" class="hidden">
+        <div class="max-w-sm mx-auto py-16">
+          <div class="dv-glass rounded-2xl border border-white/10 bg-slate-900/60 p-6">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="h-8 w-8 rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </span>
+              <h2 id="gate-title" class="font-bold">Verification required</h2>
+            </div>
+            <p id="gate-desc" class="text-sm text-slate-400 mb-4"></p>
+            <div id="gate-otp-row" class="hidden mb-3">
+              <button id="gate-send" class="w-full text-sm font-semibold rounded-lg border border-emerald-400/30 bg-emerald-500/10 text-emerald-200 py-2.5 hover:bg-emerald-500/20 transition-colors">Send me a code</button>
+            </div>
+            <input id="gate-input" type="text" autocomplete="off"
+              class="hidden w-full rounded-lg bg-slate-800/80 border border-white/10 px-3 py-2.5 text-sm outline-none focus:border-emerald-400/50 mb-3" />
+            <p id="gate-error" class="hidden text-xs text-red-400 mb-3"></p>
+            <button id="gate-submit" class="hidden w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-2.5 text-sm transition-colors">Open document</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- State: the document -->
+      <div id="state-doc" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-4">
+          <div>
+            <h1 id="doc-title" class="text-lg font-bold"></h1>
+            <p id="doc-sub" class="text-xs text-slate-400 mt-0.5"></p>
+          </div>
+          <span class="inline-flex items-center gap-1.5 self-start text-xs font-semibold rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20 px-3 py-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            View only
+          </span>
+        </div>
+        <div id="doc-content" class="dv-glass no-save rounded-2xl border border-white/10 bg-slate-900/40 overflow-hidden min-h-[60vh] flex items-center justify-center"></div>
+      </div>
+    </main>
+
+    <footer class="border-t border-white/10 py-5 text-center text-xs text-slate-500">
+      <p id="footer-expiry"></p>
+      <p class="mt-1">Protected by DocVerify · this link is private and time-limited.</p>
+    </footer>
+
+    <script>
+      // ---- Parse the share id (path) and the secret token (#fragment) ----
+      const shareId = decodeURIComponent(location.pathname.split("/").filter(Boolean).pop() || "");
+      const hashParams = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const token = hashParams.get("t") || "";
+      // Phase 3 will also read hashParams.get("k") for the zero-knowledge key.
+
+      const $ = (id) => document.getElementById(id);
+      const states = ["loading", "message", "gate", "doc"];
+      function show(state) {
+        states.forEach((s) => $("state-" + s).classList.toggle("hidden", s !== state));
+      }
+      function message(icon, title, body) {
+        $("msg-icon").textContent = icon;
+        $("msg-title").textContent = title;
+        $("msg-body").textContent = body;
+        show("message");
+      }
+      function fmt(dt) {
+        try { return new Date(dt).toLocaleString(); } catch { return ""; }
+      }
+
+      // Identify a blob by its magic bytes — reliable even if the server sent a
+      // generic content-type.
+      async function sniffBlobType(blob) {
+        try {
+          const h = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+          const ascii = (a, b) => String.fromCharCode.apply(null, h.slice(a, b));
+          if (ascii(0, 4) === "%PDF") return "application/pdf";
+          if (h[0] === 0x89 && h[1] === 0x50 && h[2] === 0x4e && h[3] === 0x47) return "image/png";
+          if (h[0] === 0xff && h[1] === 0xd8 && h[2] === 0xff) return "image/jpeg";
+          if (ascii(0, 3) === "GIF") return "image/gif";
+          if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp";
+          if (ascii(0, 8) === "DOCVENC1" || ascii(0, 8) === "DVSITE01") return "encrypted";
+        } catch (e) {}
+        return blob.type || "application/octet-stream";
+      }
+
+      async function renderDocument(meta, blob) {
+        $("doc-title").textContent = [meta.docType, meta.docNumber].filter(Boolean).join(" — ") || "Shared document";
+        $("doc-sub").textContent = meta.fileName || "";
+        const wrap = $("doc-content");
+        wrap.innerHTML = "";
+
+        // Trust the server's type unless it's generic/missing, then sniff bytes.
+        let type = blob.type || "";
+        if (!type || type === "application/octet-stream") type = await sniffBlobType(blob);
+
+        if (type === "encrypted") {
+          return message("🔒", "Couldn't open", "This document couldn't be decrypted for viewing. Ask the sender to re-share it.");
+        }
+
+        const url = URL.createObjectURL(blob);
+        if (type.startsWith("image/")) {
+          const img = document.createElement("img");
+          img.src = url;
+          img.className = "max-w-full max-h-[78vh] object-contain";
+          img.oncontextmenu = () => false;
+          wrap.appendChild(img);
+        } else if (type === "application/pdf") {
+          const frame = document.createElement("iframe");
+          frame.src = url + "#toolbar=0";
+          frame.className = "w-full h-[78vh]";
+          wrap.appendChild(frame);
+        } else {
+          wrap.innerHTML =
+            '<div class="text-center text-slate-400 p-10 text-sm">This file type can\'t be previewed in view-only mode.</div>';
+        }
+        // Deter casual saving (cosmetic; the watermark is the real protection).
+        wrap.oncontextmenu = () => false;
+        show("doc");
+      }
+
+      // Decode a base64 payload from the server into a typed Blob.
+      function b64ToBytes(b64) {
+        const chars = atob(b64);
+        const bytes = new Uint8Array(chars.length);
+        for (let i = 0; i < chars.length; i++) bytes[i] = chars.charCodeAt(i);
+        return bytes;
+      }
+      function b64ToBlob(b64, type) {
+        return new Blob([b64ToBytes(b64)], { type: type || "application/octet-stream" });
+      }
+      function b64urlToBytes(b64u) {
+        let b64 = b64u.replace(/-/g, "+").replace(/_/g, "/");
+        while (b64.length % 4) b64 += "=";
+        return b64ToBytes(b64);
+      }
+      // Zero-knowledge: decrypt ciphertext locally with the key from the link
+      // #fragment. The key never leaves the browser.
+      async function zkDecrypt(keyB64url, ivB64, ciphertext) {
+        const keyRaw = b64urlToBytes(keyB64url);
+        const iv = b64ToBytes(ivB64);
+        const key = await crypto.subtle.importKey("raw", keyRaw, { name: "AES-GCM" }, false, ["decrypt"]);
+        const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+        return new Uint8Array(plain);
+      }
+
+      // POST to open the share. Phase 2 adds { code } / { password } here.
+      async function openShare(extra = {}) {
+        const resp = await fetch(`/api/shares/${encodeURIComponent(shareId)}/open`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, ...extra }),
+        });
+        const data = await resp.json().catch(() => ({}));
+        return { ok: resp.ok, status: resp.status, data };
+      }
+
+      async function init() {
+        if (!shareId) return message("⚠️", "Invalid link", "This share link is missing its identifier.");
+        let meta;
+        try {
+          const r = await fetch(`/api/shares/${encodeURIComponent(shareId)}/meta`);
+          meta = await r.json();
+          if (!r.ok || !meta.exists) {
+            return message("🔍", "Link not found", meta.message || "This share link is invalid or has expired.");
+          }
+        } catch {
+          return message("⚠️", "Something went wrong", "Could not reach the server. Please try again.");
+        }
+
+        if (meta.revoked) return message("🚫", "Access revoked", "The owner has revoked this share link.");
+        if (meta.expired) return message("⏰", "Link expired", "This share link is no longer available.");
+
+        $("footer-expiry").textContent = meta.expiresAt ? `Expires ${fmt(meta.expiresAt)}` : "";
+
+        if (meta.gate === "otp" || meta.gate === "password") {
+          return setupGate(meta);
+        }
+        // No extra gate — open immediately.
+        attemptOpen();
+      }
+
+      // Try to open the share. On success, render it. On failure, show a full-page
+      // message unless an onError handler (the gate UI) wants to handle it inline.
+      async function attemptOpen(extra, onError) {
+        show("loading");
+        const { ok, status, data } = await openShare(extra);
+        if (ok) {
+          if (data.tier === "zk") {
+            const keyB64 = hashParams.get("k");
+            if (!keyB64) return message("🔑", "Incomplete link", "This link is missing its decryption key. Ask the sender for the complete link.");
+            try {
+              const plain = await zkDecrypt(keyB64, data.zk.ivB64, b64ToBytes(data.content));
+              return renderDocument(data.document, new Blob([plain], { type: data.document.contentType || "application/octet-stream" }));
+            } catch (e) {
+              return message("⚠️", "Couldn't decrypt", "The link's key appears to be invalid or the document is corrupted.");
+            }
+          }
+          return renderDocument(data.document, b64ToBlob(data.content, data.document.contentType));
+        }
+        if (onError) return onError(status, data);
+        if (status === 410) return message("⏰", "Link expired", data.message || "This share link is no longer available.");
+        if (status === 401) return message("🚫", "Invalid link", "This share link is not valid.");
+        return message("⚠️", "Couldn't open", data.message || "Failed to open the shared document.");
+      }
+
+      // Email-code / password gate UI.
+      function setupGate(meta) {
+        show("gate");
+        const isOtp = meta.gate === "otp";
+        const otpRow = $("gate-otp-row"), input = $("gate-input"), submit = $("gate-submit"), sendBtn = $("gate-send");
+        const setErr = (m) => { $("gate-error").textContent = m || ""; $("gate-error").classList.toggle("hidden", !m); };
+        const hint = meta.recipientEmailHint ? " to " + meta.recipientEmailHint : "";
+
+        $("gate-title").textContent = isOtp ? "Enter your code" : "Password required";
+
+        if (isOtp) {
+          $("gate-desc").textContent = `We'll email a one-time code${hint}.`;
+          otpRow.classList.remove("hidden");
+          input.classList.add("hidden"); submit.classList.add("hidden");
+          input.type = "text"; input.placeholder = "6-digit code"; input.maxLength = 6;
+          sendBtn.onclick = async () => {
+            setErr("");
+            sendBtn.disabled = true; sendBtn.textContent = "Sending…";
+            let ok = false, msg = "";
+            try {
+              const r = await fetch(`/api/shares/${encodeURIComponent(shareId)}/send-code`, {
+                method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+              });
+              const d = await r.json().catch(() => ({}));
+              ok = r.ok; msg = d.message || "";
+            } catch { msg = "Network error."; }
+            sendBtn.disabled = false; sendBtn.textContent = "Resend code";
+            if (!ok) return setErr(msg || "Could not send the code.");
+            $("gate-desc").textContent = `Enter the code we emailed${hint}.`;
+            input.classList.remove("hidden"); submit.classList.remove("hidden"); input.focus();
+          };
+        } else {
+          $("gate-desc").textContent = "This document is password protected. Enter the password the sender gave you.";
+          otpRow.classList.add("hidden");
+          input.classList.remove("hidden"); submit.classList.remove("hidden");
+          input.type = "password"; input.placeholder = "Password";
+          setTimeout(() => input.focus(), 50);
+        }
+
+        submit.onclick = () => {
+          const val = (input.value || "").trim();
+          if (!val) return setErr(isOtp ? "Enter the code." : "Enter the password.");
+          attemptOpen(isOtp ? { code: val } : { password: val }, (status, data) => {
+            show("gate");
+            setErr(data.message || "Incorrect. Please try again.");
+            if (status === 428 || status === 429) {
+              // Code expired or too many tries — go back to requesting a fresh one.
+              input.classList.add("hidden"); submit.classList.add("hidden");
+              if (isOtp) otpRow.classList.remove("hidden");
+            }
+          });
+        };
+        input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit.click(); });
+      }
+
+      init();
+    </script>
+  </body>
+</html>

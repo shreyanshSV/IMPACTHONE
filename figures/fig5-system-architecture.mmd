@@ -1,0 +1,54 @@
+flowchart TB
+  subgraph U["USERS"]
+    ISS["Issuer (organisation)<br/>MetaMask wallet"]
+    REC["Recipient (User Portal)<br/>email + OTP · optional wallet"]
+    EXT["External viewer<br/>temporary share link"]
+  end
+
+  subgraph F["FRONTEND (vanilla JS)"]
+    IP["Issuer Portal"]
+    UP["User Portal<br/>dashboard · authenticity · received"]
+    SP["Public share page /share/:id"]
+  end
+
+  subgraph B["BACKEND — Node.js / Express"]
+    AUTH["Auth<br/>sessions · OTP · wallet signatures"]
+    PUB["Issuer publish<br/>watermark → fingerprint → encrypt"]
+    CHK["4-Layer Authenticity Check<br/>SHA-256 · watermark · pHash · chain"]
+    SHR["ShareSecure<br/>expiring encrypted shares · revoke"]
+    VAULT["Vault AES-256-GCM<br/>every file encrypted before storage"]
+    WM["Watermark micro-service<br/>self-hosted Python · DWT-DCT"]
+  end
+
+  subgraph D["DATA & TRUST"]
+    DB[("MongoDB<br/>records · shares TTL · audit<br/>only hashes of secrets")]
+    IPFS[("IPFS / Pinata<br/>ciphertext only")]
+    ETH[("Ethereum Sepolia<br/>DocVerifyRegistry<br/>keccak-256 hash · issuer · receiver")]
+  end
+
+  subgraph N["NOTIFICATIONS — links & codes only, never the document"]
+    MAIL["Gmail SMTP"]
+    N8N["n8n (VPS) → WhatsApp + Email"]
+  end
+
+  ISS --> IP --> PUB
+  REC --> UP --> CHK
+  EXT --> SP --> SHR
+  PUB --> VAULT --> IPFS
+  PUB --> WM
+  PUB --> DB
+  ISS -. "signs tx via MetaMask" .-> ETH
+  CHK --> DB & ETH
+  CHK -. "verdict" .-> N8N
+  SHR --> DB & IPFS
+  SHR -. "one-time codes" .-> MAIL
+
+  classDef gold fill:#fefce8,stroke:#ca8a04;
+  classDef blue fill:#eff6ff,stroke:#0284c7;
+  classDef green fill:#f0fdf4,stroke:#10b981;
+  classDef ind fill:#eef2ff,stroke:#6366f1;
+  classDef store fill:#ecfeff,stroke:#06b6d4;
+  classDef chain fill:#f5f3ff,stroke:#7c3aed;
+  classDef warn fill:#fff7ed,stroke:#f59e0b;
+  class ISS,IP gold; class REC,UP blue; class EXT,SP green;
+  class AUTH,PUB,CHK,SHR,VAULT,WM ind; class DB,IPFS store; class ETH chain; class MAIL,N8N warn;

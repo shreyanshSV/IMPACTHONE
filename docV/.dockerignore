@@ -1,0 +1,23 @@
+# Never ship these into the image
+node_modules
+npm-debug.log*
+.env
+.env.*
+.git
+.gitignore
+Dockerfile
+.dockerignore
+
+# Dev / test / build-only stuff not needed at runtime
+tests
+coverage
+dist
+build
+.vscode
+.idea
+src
+*.md
+
+# OS cruft
+.DS_Store
+Thumbs.db

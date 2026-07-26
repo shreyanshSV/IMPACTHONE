@@ -1,0 +1,21 @@
+sequenceDiagram
+  autonumber
+  participant O as Owner browser
+  participant S as Server (blind escrow)
+  participant R as Recipient browser
+  rect rgb(239,246,255)
+  note over O,S: CREATE
+  O->>O: k = WebCrypto AES-GCM-256; (iv, C) = encrypt(k, P)
+  O->>S: POST /api/shares/zk (C, iv; NO key)
+  S->>S: pin C to IPFS; store iv, H(token); store NO key
+  S-->>O: return /share/:id#t=token
+  O->>O: append &k=key to fragment locally (never sent)
+  end
+  rect rgb(236,253,245)
+  note over R,S: OPEN
+  R->>R: read token + key from #fragment
+  R->>S: POST /open {token} (gate enforced)
+  S-->>R: ciphertext C + iv (server cannot decrypt)
+  R->>R: P = decrypt(k, iv, C); render (view-only)
+  end
+  note over O,R: key k exists only in browsers + URL fragment — never in any request, log, DB, or email

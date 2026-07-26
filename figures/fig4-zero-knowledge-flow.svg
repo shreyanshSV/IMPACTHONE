@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 620" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="8" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="980" height="620" fill="#ffffff"/>
+  <text x="490" y="30" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">Zero-Knowledge Tier — Create &amp; Open</text>
+  <text x="490" y="48" text-anchor="middle" font-size="12" fill="#059669">The server stores and gates ciphertext but holds no key — it can never read the document.</text>
+
+  <!-- lane headers -->
+  <rect x="60" y="62" width="180" height="40" rx="8" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="150" y="87" text-anchor="middle" font-size="13" fill="#0f172a">Owner browser</text>
+  <rect x="400" y="62" width="180" height="40" rx="8" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="490" y="87" text-anchor="middle" font-size="13" fill="#0f172a">Server (blind escrow)</text>
+  <rect x="740" y="62" width="180" height="40" rx="8" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="830" y="87" text-anchor="middle" font-size="13" fill="#0f172a">Recipient browser</text>
+
+  <!-- lifelines -->
+  <line x1="150" y1="102" x2="150" y2="588" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="490" y1="102" x2="490" y2="588" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="830" y1="102" x2="830" y2="588" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+
+  <text x="40" y="130" font-size="12" font-weight="700" fill="#1d4ed8">CREATE</text>
+
+  <!-- 1 owner self -->
+  <rect x="40" y="120" width="220" height="46" rx="8" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="150" y="140" text-anchor="middle" font-size="11" fill="#0f172a">1. k ← WebCrypto AES-GCM-256</text>
+  <text x="150" y="156" text-anchor="middle" font-size="11" fill="#0f172a">(iv, C) = encrypt(k, P)</text>
+
+  <!-- 2 owner->server -->
+  <line x1="260" y1="186" x2="488" y2="186" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="370" y="179" text-anchor="middle" font-size="11" fill="#334155">2. POST /api/shares/zk  (C, iv;  NO key)</text>
+
+  <!-- 3 server self -->
+  <rect x="370" y="204" width="240" height="46" rx="8" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="490" y="224" text-anchor="middle" font-size="11" fill="#0f172a">3. pin C → IPFS; store iv, H(token)</text>
+  <text x="490" y="240" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">store NO key</text>
+
+  <!-- 4 server->owner + owner self -->
+  <line x1="490" y1="278" x2="152" y2="278" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="320" y="271" text-anchor="middle" font-size="11" fill="#334155">4. return  /share/:id#t=&lt;token&gt;</text>
+  <rect x="40" y="290" width="220" height="30" rx="8" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="150" y="310" text-anchor="middle" font-size="11" fill="#0f172a">append &amp;k=&lt;key&gt; locally (never sent)</text>
+
+  <!-- OPEN band -->
+  <line x1="30" y1="340" x2="950" y2="340" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="40" y="362" font-size="12" font-weight="700" fill="#059669">OPEN</text>
+
+  <!-- 5 recipient self -->
+  <rect x="720" y="356" width="220" height="30" rx="8" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="830" y="376" text-anchor="middle" font-size="11" fill="#0f172a">5. read token + key from #fragment</text>
+
+  <!-- 6 recipient->server -->
+  <line x1="830" y1="408" x2="492" y2="408" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="660" y="401" text-anchor="middle" font-size="11" fill="#334155">6. POST /open { token }   (gate enforced)</text>
+
+  <!-- 7 server->recipient -->
+  <line x1="490" y1="446" x2="828" y2="446" stroke="#475569" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="660" y="439" text-anchor="middle" font-size="11" fill="#334155">7. ciphertext C + iv  (server cannot decrypt)</text>
+
+  <!-- 8 recipient self -->
+  <rect x="720" y="464" width="220" height="46" rx="8" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="830" y="484" text-anchor="middle" font-size="11" fill="#0f172a">8. P = decrypt(k, iv, C)</text>
+  <text x="830" y="500" text-anchor="middle" font-size="11" fill="#0f172a">render (view-only)</text>
+
+  <text x="490" y="566" text-anchor="middle" font-size="11.5" fill="#334155">The key k exists only in the two browsers and the URL fragment — never in any HTTP request, log, database, or email.</text>
+</svg>
