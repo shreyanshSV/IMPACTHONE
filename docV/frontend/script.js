@@ -7,8 +7,11 @@
 //    backend on the VPS at a SAME-SITE subdomain (api.thecosmicdev.net) so the
 //    login session cookie is sent cross-subdomain. Override with
 //    window.API_ORIGIN if you use a different backend host.
-const IS_LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-const API_ORIGIN = IS_LOCAL ? location.origin : (window.API_ORIGIN || "https://api.thecosmicdev.net");
+// Default: same origin — works for local dev AND the all-in-one deploy where the
+// Node server serves this frontend (docuchain.thecosmicdev.net).
+// Split hosting (frontend on Cloudflare Pages, API on the VPS): set
+// window.API_ORIGIN in index.html, e.g. "https://api.docuchain.thecosmicdev.net".
+const API_ORIGIN = window.API_ORIGIN || location.origin;
 const API_BASE_URL = `${API_ORIGIN}/api`;
 
 // --- CONSTANTS ---

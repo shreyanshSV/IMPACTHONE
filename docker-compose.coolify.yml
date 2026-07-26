@@ -4,7 +4,7 @@
 #  Use this file when deploying through Coolify:
 #    Coolify → + New → Docker Compose → (your Git repo, branch main)
 #    → Compose file path: docker-compose.coolify.yml
-#  Then set the app's Domain to https://thecosmicdev.net in the Coolify UI,
+#  Then set the app's Domain to https://docuchain.thecosmicdev.net in the Coolify UI,
 #  paste your secrets under Environment Variables, and click Deploy.
 #
 #  Differences from docker-compose.yml (the plain-docker/nginx version):
@@ -22,7 +22,7 @@ services:
       NODE_ENV: production
       PORT: "3000"
       OCR_SERVICE_URL: "http://watermark:8100"
-      RENDER_APP_URL: "https://thecosmicdev.net"   # QR links + email links
+      RENDER_APP_URL: "https://docuchain.thecosmicdev.net"   # QR links + email links
       # --- Secrets: add these in Coolify UI → Environment Variables ---------
       #   MONGODB_URI            SESSION_SECRET
       #   PINATA_API_KEY         PINATA_SECRET_API_KEY

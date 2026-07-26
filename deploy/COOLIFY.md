@@ -1,4 +1,4 @@
-# DocVerify on Coolify — one-click deploy (domain: thecosmicdev.net)
+# DocVerify on Coolify — one-click deploy (domain: docuchain.thecosmicdev.net)
 
 The near-one-click path. Coolify handles the reverse proxy + HTTPS, so all the
 nginx/certbot errors from before disappear. ~5 clicks after DNS.
@@ -38,7 +38,7 @@ Optional: add a second A record `www` → same IP if you want `www.` to work.
 On the **app** service → **Domains** field, enter:
 
 ```
-https://thecosmicdev.net
+https://docuchain.thecosmicdev.net
 ```
 
 Coolify auto-wires its proxy to the container's exposed port 3000 and requests
@@ -72,7 +72,7 @@ compose file — don't re-add them.
 ## Step 5 — Deploy
 
 Click **Deploy**. Coolify builds both images, starts them, and issues the cert.
-When it's green, open **https://thecosmicdev.net**.
+When it's green, open **https://docuchain.thecosmicdev.net**.
 
 **Then (optional) turn on Cloudflare proxy:** flip the A record to orange cloud,
 and in Cloudflare → SSL/TLS set the mode to **Full (strict)**. This gives you

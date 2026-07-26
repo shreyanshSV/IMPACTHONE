@@ -23,7 +23,7 @@ services:
       PORT: "3000"
       OCR_SERVICE_URL: "http://watermark:8100"
       # Public URL used in QR links + emails:
-      RENDER_APP_URL: "https://thecosmicdev.net"
+      RENDER_APP_URL: "https://docuchain.thecosmicdev.net"
     depends_on:
       - watermark
 
