@@ -18,6 +18,11 @@ build
 src
 *.md
 
+# Capacitor / Android app build — not needed by the server
+android
+assets
+capacitor.config.json
+
 # OS cruft
 .DS_Store
 Thumbs.db

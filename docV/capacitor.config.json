@@ -1,0 +1,10 @@
+{
+  "appId": "net.thecosmicdev.docuchain",
+  "appName": "DocuChain",
+  "webDir": "frontend",
+  "server": {
+    "url": "https://docuchain.thecosmicdev.net",
+    "androidScheme": "https",
+    "cleartext": false
+  }
+}
