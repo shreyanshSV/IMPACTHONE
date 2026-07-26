@@ -1,9 +1,15 @@
 // ==================== DOCUMENT PORTAL - VANILLA JAVASCRIPT ==================== //
 
 // --- CONFIGURATION ---
-// Same-origin API path — works locally (localhost:5000) AND when deployed
-// (e.g. https://your-app.onrender.com), since the server serves this frontend.
-const API_BASE_URL = `${window.location.origin}/api`;
+// API base:
+//  - Local dev (localhost): same origin — the Node server serves this frontend.
+//  - Hosted: frontend lives on Cloudflare Pages (thecosmicdev.net) and the
+//    backend on the VPS at a SAME-SITE subdomain (api.thecosmicdev.net) so the
+//    login session cookie is sent cross-subdomain. Override with
+//    window.API_ORIGIN if you use a different backend host.
+const IS_LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const API_ORIGIN = IS_LOCAL ? location.origin : (window.API_ORIGIN || "https://api.thecosmicdev.net");
+const API_BASE_URL = `${API_ORIGIN}/api`;
 
 // --- CONSTANTS ---
 const COUNTRY_CODES = [
