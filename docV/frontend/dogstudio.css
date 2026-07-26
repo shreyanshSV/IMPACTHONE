@@ -937,6 +937,16 @@
   border-color: rgba(56, 189, 248, 0.6) !important;
   box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.14) !important;
 }
+/* Native <select> dropdown popup must be opaque. Without this, Chrome renders
+   the open list using the select's near-transparent bg (rgba 4%) and light ink,
+   so the country list shows see-through and overlaps the page. */
+.ds-dark select option {
+  background-color: var(--d-surface) !important;   /* solid #0a0f17 */
+  color: var(--d-ink) !important;
+}
+.ds-dark select option:checked {
+  background-color: rgba(56, 189, 248, 0.22) !important;
+}
 
 /* ---- component classes from style.css ---- */
 .ds-dark .nav-item.active {
