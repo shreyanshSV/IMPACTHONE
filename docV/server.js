@@ -1099,25 +1099,22 @@ app.post("/api/documents/:docId/view", isAuthenticated, async (req, res) => {
         if (!document) {
             return res.status(404).json({ message: "Document not found." });
         }
-        
-        // Verify MetaMask signature
-        if (!walletAddress || !signature) {
-            return res.status(400).json({ message: "MetaMask verification required." });
-        }
-        
-        try {
-            // Verify the signature
-            const message = `Access document: ${docId}`;
-            const recoveredAddress = web3.eth.accounts.recover(message, signature);
-            
-            if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-                return res.status(401).json({ message: "Invalid MetaMask signature." });
+
+        // Wallet signature is OPTIONAL. The login session (isAuthenticated) plus the
+        // ownership filter above (docId + userId) already authorise this user for
+        // their own document. Desktop/MetaMask may still send a signature as an
+        // extra check; the mobile app omits it. Verify only if one is supplied.
+        if (walletAddress && signature) {
+            try {
+                const message = `Access document: ${docId}`;
+                const recoveredAddress = web3.eth.accounts.recover(message, signature);
+                if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+                    return res.status(401).json({ message: "Invalid MetaMask signature." });
+                }
+            } catch (sigError) {
+                console.error("❌ Signature verification failed:", sigError.message);
+                return res.status(401).json({ message: "Invalid signature format." });
             }
-            
-            console.log("✅ MetaMask signature verified for document access");
-        } catch (sigError) {
-            console.error("❌ Signature verification failed:", sigError.message);
-            return res.status(401).json({ message: "Invalid signature format." });
         }
         
         // Fetch document from IPFS
@@ -1628,11 +1625,10 @@ app.post("/api/received-documents/:docId/view", isAuthenticated, async (req, res
         const walletMatch = signer &&
             (signer === doc.receiverWallet || signer === doc.issuerWallet);
 
+        // Authorised if the logged-in user is the recipient by email (mobile: no
+        // wallet) OR proves control of the issuer/recipient wallet (desktop).
         if (!emailMatch && !walletMatch) {
             return res.status(403).json({ message: "Access denied: you are not the recipient of this document." });
-        }
-        if (!walletMatch) {
-            return res.status(401).json({ message: "Please sign with the recipient or issuer wallet to open this document." });
         }
 
         const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${doc.documentCID}`;

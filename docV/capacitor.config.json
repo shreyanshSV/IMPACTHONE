@@ -3,7 +3,7 @@
   "appName": "DocuChain",
   "webDir": "frontend",
   "server": {
-    "url": "https://docuchain.thecosmicdev.net",
+    "url": "https://docuchain.thecosmicdev.net/app.html",
     "androidScheme": "https",
     "cleartext": false
   }
