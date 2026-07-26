@@ -467,16 +467,11 @@ app.post("/api/auth/send-email-otp", authLimiter, async (req, res) => {
             console.log(`📧 OTP sent via Gmail to ${email}`);
             res.json({ message: "OTP sent successfully" });
         } catch (emailError) {
+            // Never leak the OTP to the client. Fail cleanly and log the real
+            // reason server-side (usually EMAIL_USER/EMAIL_PASS misconfig).
             console.error("❌ Gmail Send Failed:", emailError.message);
-            console.log("⚠️ FALLBACK MODE ACTIVATED");
-            console.log(`🔒 YOUR OTP CODE IS: ${otp}`);
-            console.log("⚠️ Use this code to verify (since email failed).");
-            
-            // Return success anyway so frontend works
-            res.json({ 
-                message: "Email failed, check terminal for OTP (Dev Mode)", 
-                devOtp: otp 
-            });
+            await OTP.deleteMany({ email });   // don't leave a code that can't be delivered
+            res.status(502).json({ message: "Could not send the verification email. Please try again shortly." });
         }
     } catch (error) {
         console.error("System error:", error);

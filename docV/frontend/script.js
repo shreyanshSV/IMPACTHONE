@@ -419,32 +419,38 @@ function togglePasswordVisibility(inputId) {
 /**
  * Send OTP to email (Simulated)
  */
-function sendEmailOTP() {
+async function sendEmailOTP() {
     const emailInput = document.getElementById('signup-email');
-    const email = emailInput.value;
-    
+    const email = emailInput.value.trim();
+
     if (!email || !email.includes('@')) {
         showToast('Please enter a valid email address', 'error');
         return;
     }
-    
-    // Generate 6-digit OTP
-    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('Use this OTP to verify:', generatedOTP);
-    
-    // Show OTP input container
-    document.getElementById('email-otp-container').classList.remove('hidden');
+
     const btn = document.getElementById('verify-email-btn');
+    const originalText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = 'Sent';
-    btn.classList.add('opacity-50', 'cursor-not-allowed');
-    
-    showToast(`Verification code sent to ${email}`, 'success');
-    
-    // Simulate email arrival with popup
-    setTimeout(() => {
-        alert(`Your Verification Code is: ${generatedOTP}`);
-    }, 1000);
+    btn.textContent = 'Sending…';
+
+    try {
+        const resp = await fetch(`${API_BASE_URL}/auth/send-email-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.message || 'Failed to send the code');
+
+        document.getElementById('email-otp-container').classList.remove('hidden');
+        btn.textContent = 'Sent';
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        showToast(`Verification code sent to ${email}`, 'success');
+    } catch (err) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        showToast(err.message || 'Could not send the code. Please try again.', 'error');
+    }
 }
 
 // ============================================
@@ -460,11 +466,25 @@ function sendEmailOTP() {
 /**
  * Verify entered OTP (Simulated)
  */
-function verifyEmailOTP() {
+async function verifyEmailOTP() {
     const input = document.getElementById('email-otp-input');
-    const enteredOTP = input.value;
-    
-    if (enteredOTP === generatedOTP) {
+    const enteredOTP = input.value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+
+    if (!enteredOTP) {
+        showToast('Enter the verification code', 'error');
+        return;
+    }
+
+    try {
+        const resp = await fetch(`${API_BASE_URL}/auth/verify-email-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp: enteredOTP }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.message || 'Invalid verification code');
+
         isEmailVerified = true;
         document.getElementById('email-otp-container').classList.add('hidden');
         const btn = document.getElementById('verify-email-btn');
@@ -472,10 +492,10 @@ function verifyEmailOTP() {
         btn.classList.remove('bg-slate-800', 'opacity-50', 'cursor-not-allowed');
         btn.classList.add('bg-green-600');
         document.getElementById('signup-email').readOnly = true;
-        
+
         showToast('Email verified successfully!', 'success');
-    } else {
-        showToast('Invalid verification code', 'error');
+    } catch (err) {
+        showToast(err.message || 'Invalid verification code', 'error');
     }
 }
 

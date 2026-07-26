@@ -928,6 +928,9 @@
   background-color: rgba(255, 255, 255, 0.04) !important;
   border-color: var(--d-line) !important;
   color: var(--d-ink) !important;
+  /* Render native controls (incl. the <select> popup) in dark mode so the
+     dropdown list is opaque instead of see-through. */
+  color-scheme: dark;
 }
 .ds-dark input::placeholder,
 .ds-dark textarea::placeholder { color: var(--d-faint) !important; }
