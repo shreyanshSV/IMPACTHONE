@@ -614,12 +614,24 @@
                 >Phone Number</label
               >
               <div class="flex gap-3">
-                <select
-                  id="country-code"
-                  class="w-24 px-2 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all text-sm"
-                >
-                  <!-- Populated by JavaScript -->
-                </select>
+                <!-- Custom country dropdown (native <select> popup is translucent
+                     on Windows 11 and unstyleable; this is a normal element). -->
+                <div id="cc-wrap" class="relative">
+                  <button
+                    type="button"
+                    id="cc-btn"
+                    class="w-24 h-full px-2 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm flex items-center justify-between gap-1 outline-none focus:ring-2 focus:ring-brand-500"
+                  >
+                    <span id="cc-label">🇮🇳 +91</span>
+                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 7l5 5 5-5z"/></svg>
+                  </button>
+                  <input type="hidden" id="country-code" value="+91" />
+                  <div
+                    id="cc-list"
+                    class="hidden absolute z-50 mt-1 left-0 w-64 max-h-72 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl py-1"
+                    role="listbox"
+                  ></div>
+                </div>
                 <input
                   type="tel"
                   name="phone"
@@ -932,7 +944,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
             </svg>
             Received Documents
-          </button>
+          </button>
 
           <!-- Account Section -->
           <p

@@ -951,6 +951,30 @@
   background-color: rgba(56, 189, 248, 0.22) !important;
 }
 
+/* ---- custom country-code dropdown (opaque, cross-platform) ---- */
+#cc-list { scrollbar-width: thin; }
+.cc-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; text-align: left;
+  padding: 8px 12px; font-size: 13px; line-height: 1.3;
+  color: #0f172a; background: transparent; border: 0; cursor: pointer;
+}
+.cc-item > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cc-item:hover, .cc-item:focus { background: #f1f5f9; outline: none; }
+.cc-dial { color: #64748b; font-variant-numeric: tabular-nums; flex: none; }
+.cc-sep { height: 1px; margin: 4px 8px; background: #e2e8f0; }
+
+.ds-dark #cc-btn {
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: var(--d-line) !important;
+  color: var(--d-ink) !important;
+}
+.ds-dark #cc-list { background: var(--d-surface) !important; border-color: var(--d-line) !important; }
+.ds-dark .cc-item { color: var(--d-ink); }
+.ds-dark .cc-item:hover, .ds-dark .cc-item:focus { background: rgba(56,189,248,0.14); }
+.ds-dark .cc-dial { color: var(--d-faint); }
+.ds-dark .cc-sep { background: var(--d-line); }
+
 /* ---- component classes from style.css ---- */
 .ds-dark .nav-item.active {
   background-color: rgba(56, 189, 248, 0.14) !important;

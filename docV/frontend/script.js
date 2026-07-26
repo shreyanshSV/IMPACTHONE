@@ -573,71 +573,61 @@ function switchAuthTab(tab) {
 /**
  * Update country select display
  */
-function updateCountrySelectDisplay() {
-    const select = document.getElementById('country-code');
-    if (!select) return;
-
-    Array.from(select.options).forEach(option => {
-        if (option.disabled || !option.dataset.short) return;
-
-        if (option.selected) {
-            option.textContent = option.dataset.short;
-        } else {
-            option.textContent = option.dataset.full;
-        }
-    });
-}
-
 /**
- * Populate country codes
+ * Custom country-code dropdown. Replaces the native <select> because its popup
+ * is rendered translucent + unstyleable by Chrome on Windows 11. This is plain
+ * DOM, so it's always opaque. The chosen dial code is stored in the hidden
+ * #country-code input so existing signup code (reads .value) is unchanged.
  */
 function populateCountryCodes() {
-    const select = document.getElementById('country-code');
-    if (!select) return;
-    
-    // Clear existing
-    select.innerHTML = '';
-    
-    // Helper to create option
-    const addOption = (country) => {
-         const option = document.createElement('option');
-         option.value = country.dial_code;
-         
-         const fullText = `${country.flag} ${country.name} (${country.dial_code})`;
-         const shortText = `${country.flag} ${country.dial_code}`;
-         
-         option.dataset.full = fullText;
-         option.dataset.short = shortText;
-         option.textContent = fullText; // Default to full
-         
-         select.appendChild(option);
-    };
-    
-    // Add common ones
+    const list = document.getElementById('cc-list');
+    const hidden = document.getElementById('country-code');
+    const label = document.getElementById('cc-label');
+    const btn = document.getElementById('cc-btn');
+    if (!list || !hidden || !label || !btn) return;
+
     const priority = ['IN', 'US', 'GB', 'AE', 'CA', 'AU'];
-    priority.forEach(code => {
-        const country = COUNTRY_CODES.find(c => c.code === code);
-        if (country) addOption(country);
-    });
+    const ordered = [
+        ...priority.map(code => COUNTRY_CODES.find(c => c.code === code)).filter(Boolean),
+        null, // separator
+        ...COUNTRY_CODES.filter(c => !priority.includes(c.code)),
+    ];
 
-    // Separator
-    const separator = document.createElement('option');
-    separator.disabled = true;
-    separator.textContent = '──────────';
-    select.appendChild(separator);
+    const choose = (country) => {
+        hidden.value = country.dial_code;
+        label.textContent = `${country.flag} ${country.dial_code}`;
+        list.classList.add('hidden');
+    };
 
-    // Add others
-    COUNTRY_CODES.forEach(country => {
-        if (!priority.includes(country.code)) {
-            addOption(country);
+    list.innerHTML = '';
+    ordered.forEach(country => {
+        if (!country) {
+            const sep = document.createElement('div');
+            sep.className = 'cc-sep';
+            list.appendChild(sep);
+            return;
         }
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'cc-item';
+        item.setAttribute('role', 'option');
+        item.innerHTML = `<span>${country.flag} ${country.name}</span><span class="cc-dial">${country.dial_code}</span>`;
+        item.addEventListener('click', () => choose(country));
+        list.appendChild(item);
     });
 
-    // Add change listener to update view
-    select.onchange = updateCountrySelectDisplay;
-    
-    // Set initial state
-    updateCountrySelectDisplay();
+    // Toggle open/close
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        list.classList.toggle('hidden');
+    });
+    // Close on outside click / Escape
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#cc-wrap')) list.classList.add('hidden');
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') list.classList.add('hidden');
+    });
 }
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
