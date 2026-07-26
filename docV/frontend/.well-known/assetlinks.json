@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "net.thecosmicdev.docuchain",
+    "sha256_cert_fingerprints": ["DE:81:F2:13:7A:98:65:70:DB:A6:31:6C:B7:08:7D:88:AB:66:3C:7A:29:AC:EC:AB:99:09:BF:49:6B:14:BA:B2"]
+  }
+}]

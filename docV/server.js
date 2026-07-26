@@ -188,8 +188,10 @@ function handleUpload(field) {
     };
 }
 
-// Serve vanilla frontend from frontend folder
-app.use(express.static(path.join(__dirname, 'frontend')));
+// Serve vanilla frontend from frontend folder.
+// dotfiles: 'allow' so /.well-known/assetlinks.json is served (Android TWA
+// Digital Asset Links verification — removes the address bar in the APK).
+app.use(express.static(path.join(__dirname, 'frontend'), { dotfiles: 'allow' }));
 
 mongoose
     .connect(MONGODB_URI)
