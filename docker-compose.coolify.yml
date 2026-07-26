@@ -1,0 +1,39 @@
+# ============================================================================
+#  DocVerify — Coolify deployment (app + invisible-watermark service)
+# ----------------------------------------------------------------------------
+#  Use this file when deploying through Coolify:
+#    Coolify → + New → Docker Compose → (your Git repo, branch main)
+#    → Compose file path: docker-compose.coolify.yml
+#  Then set the app's Domain to https://thecosmicdev.net in the Coolify UI,
+#  paste your secrets under Environment Variables, and click Deploy.
+#
+#  Differences from docker-compose.yml (the plain-docker/nginx version):
+#   - No host "ports" — Coolify's built-in proxy routes the domain to the
+#     container's exposed port (3000) and handles HTTPS automatically.
+#   - No "env_file" — Coolify injects the env vars you paste in its UI.
+# ============================================================================
+services:
+  app:
+    build: ./docV
+    restart: unless-stopped
+    expose:
+      - "3000"                           # Coolify's proxy routes your domain here
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      OCR_SERVICE_URL: "http://watermark:8100"
+      RENDER_APP_URL: "https://thecosmicdev.net"   # QR links + email links
+      # --- Secrets: add these in Coolify UI → Environment Variables ---------
+      #   MONGODB_URI            SESSION_SECRET
+      #   PINATA_API_KEY         PINATA_SECRET_API_KEY
+      #   WEB3_PROVIDER_URL      ACCOUNT_ADDRESS       PRIVATE_KEY
+      #   DOC_MASTER_KEY         EMAIL_USER            EMAIL_PASS
+      # (never commit these — Coolify stores and injects them)
+    depends_on:
+      - watermark
+
+  watermark:
+    build: ./docV/ocr-service
+    restart: unless-stopped
+    expose:
+      - "8100"                           # internal only; app reaches it by name
