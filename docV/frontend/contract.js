@@ -4,15 +4,16 @@
 // See ../contracts/README_REMIX.md for step-by-step instructions.
 //
 // Until this is set, the Issuer Portal will warn you and refuse to publish.
-const CONTRACT_ADDRESS = "0xf0Ad70110e8016c2777E09465b40CA43f72a45c5";
+const CONTRACT_ADDRESS = "0xFaFD7Df607b3E3B2857BE94e7ee5A54de33B5dDe";
 
-// Sepolia testnet (matches WEB3_PROVIDER_URL in .env)
+// Base mainnet (real L2, ~cent gas). Match WEB3_PROVIDER_URL in .env / Coolify
+// to https://mainnet.base.org.
 const CHAIN_CONFIG = {
-    chainIdHex: "0xaa36a7",          // 11155111
-    chainName: "Sepolia Testnet",
-    rpcUrls: ["https://rpc.sepolia.org"],
-    nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
-    blockExplorerUrls: ["https://sepolia.etherscan.io"],
+    chainIdHex: "0x2105",            // 8453
+    chainName: "Base",
+    rpcUrls: ["https://mainnet.base.org"],
+    nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+    blockExplorerUrls: ["https://basescan.org"],
 };
 
 // Minimal ABI for the functions the frontend uses.

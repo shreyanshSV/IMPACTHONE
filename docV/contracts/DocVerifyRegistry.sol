@@ -16,7 +16,7 @@ pragma solidity ^0.8.19;
  *         confirm who is authorised.
  *
  *         Deploy this contract with Remix IDE (Injected Provider - MetaMask)
- *         on the Sepolia testnet. See contracts/README_REMIX.md.
+ *         on Base mainnet (chain id 8453). See contracts/README_REMIX.md.
  */
 contract DocVerifyRegistry {
     struct Document {
