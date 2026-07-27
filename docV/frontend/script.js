@@ -657,6 +657,7 @@ function showDashboardSection(sectionId) {
         'verify': 'Verify Document',
         'authenticity': 'Authenticity Check',
         'received': 'Received Documents',
+        'shares': 'My Shares',
         'qrVerification': 'QR Scanner',
         'share': 'Share Document',
         'profile': 'My Profile',
@@ -1153,6 +1154,10 @@ function loadDashboardSection(sectionId) {
         case 'received':
             content.innerHTML = getReceivedDocumentsHTML();
             loadReceivedDocuments();
+            break;
+        case 'shares':
+            content.innerHTML = getMySharesHTML();
+            loadMyShares();
             break;
         case 'qrVerification':
             content.innerHTML = getQRScannerHTML();
@@ -4676,6 +4681,83 @@ window.getReceivedDocumentsHTML = getReceivedDocumentsHTML;
 window.loadReceivedDocuments = loadReceivedDocuments;
 window.viewReceivedDocument = viewReceivedDocument;
 window.downloadReceivedDocument = downloadReceivedDocument;
+
+// ============================================================
+// MY SHARES — list every share the user created + revoke access
+// ============================================================
+function shareEsc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function getMySharesHTML() {
+    return `
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-brand-600 to-brand-700 rounded-2xl p-6 text-white flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold">My Shares</h2>
+          <p class="text-brand-100 text-sm mt-1">Links you've created. Revoke access anytime — the link stops working instantly.</p>
+        </div>
+        <button onclick="loadMyShares()" class="px-4 py-2 text-sm font-medium bg-white/15 hover:bg-white/25 rounded-xl transition-colors">↻ Refresh</button>
+      </div>
+      <div id="my-shares-list">
+        <div class="flex items-center justify-center h-40"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div></div>
+      </div>
+    </div>`;
+}
+function shareStatusInfo(s) {
+    if (s.revoked) return { label: 'Revoked', cls: 'text-red-600 bg-red-50', active: false };
+    if (s.expiresAt && new Date(s.expiresAt) < new Date()) return { label: 'Expired', cls: 'text-orange-600 bg-orange-50', active: false };
+    return { label: 'Active', cls: 'text-emerald-600 bg-emerald-50', active: true };
+}
+function shareCardHTML(s) {
+    const st = shareStatusInfo(s);
+    const to = s.audience === 'user' ? (s.recipientEmail || s.recipientWallet || 'a registered user') : 'Anyone with the link';
+    const exp = s.expiresAt ? new Date(s.expiresAt).toLocaleString() : '—';
+    return `
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-3 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center flex-none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-slate-800 truncate">${shareEsc(s.docType || 'Document')}${s.docNumber ? ' · ' + shareEsc(s.docNumber) : ''}</div>
+        <div class="text-sm text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
+          <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${st.cls}">${st.label}</span>
+          <span>${shareEsc(to)}</span>
+          <span>· expires ${shareEsc(exp)}</span>
+          ${s.maxViews ? `<span>· ${s.viewCount || 0}/${s.maxViews} views</span>` : ''}
+        </div>
+      </div>
+      ${st.active ? `<button onclick="revokeShareDesktop('${shareEsc(s.shareId)}')" class="flex-none px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">Revoke</button>` : ''}
+    </div>`;
+}
+async function loadMyShares() {
+    const list = document.getElementById('my-shares-list');
+    if (!list) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}/shares/mine`, { credentials: 'include' });
+        const shares = await res.json();
+        if (!res.ok) throw new Error(shares.message || 'Failed to load your shares');
+        if (!shares.length) {
+            list.innerHTML = `<div class="bg-white rounded-2xl border border-slate-100 p-10 text-center text-slate-500">You haven't shared any documents yet. Open a received document and use <b>Share</b> to create a link.</div>`;
+            return;
+        }
+        list.innerHTML = shares.map(shareCardHTML).join('');
+    } catch (e) {
+        list.innerHTML = `<div class="bg-white rounded-2xl border border-red-100 p-8 text-center text-red-600">${shareEsc(e.message)}</div>`;
+    }
+}
+async function revokeShareDesktop(shareId) {
+    if (!confirm('Revoke this share? The link will stop working immediately and cannot be undone.')) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}/shares/${encodeURIComponent(shareId)}/revoke`, { method: 'POST', credentials: 'include' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to revoke');
+        showToast('Share revoked', 'success');
+        loadMyShares();
+    } catch (e) { showToast(e.message || 'Failed to revoke', 'error'); }
+}
+window.getMySharesHTML = getMySharesHTML;
+window.loadMyShares = loadMyShares;
+window.revokeShareDesktop = revokeShareDesktop;
 
 // ==================================================================== //
 // ================= SECURE DOCUMENT SHARING (modal) ================== //

@@ -50,6 +50,7 @@ const ICONS = {
   idcard: S(`<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h4M6 15c.5-1.5 4.5-1.5 5 0"/>`),
   cert: S(`<circle cx="12" cy="9" r="5"/><path d="M9 13l-1 8 4-2 4 2-1-8"/>`),
   wallet: S(`<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.3"/>`),
+  trash: S(`<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>`),
 };
 const logoBadge = (cls) => `<span class="${cls}"><img src="/icon.svg" alt="" /></span>`;
 
@@ -171,7 +172,7 @@ async function doSigninWallet() {
 /* ============================================================
    APP SHELL
    ============================================================ */
-const TAB_TITLE = { home: "", documents: "Your Documents", received: "Received", profile: "Profile" };
+const TAB_TITLE = { home: "", documents: "Your Documents", received: "Received", shares: "My Shares", profile: "Profile" };
 function appbarHtml() {
   const first = (state.user?.fullName || "there").split(" ")[0];
   const inner = state.tab === "home"
@@ -181,7 +182,7 @@ function appbarHtml() {
 }
 function renderShell() {
   root.innerHTML = `${appbarHtml()}<div id="screen" class="screen"></div>
-    <nav class="nav">${navBtn("home", "Home", ICONS.home)}${navBtn("documents", "Documents", ICONS.doc)}${navBtn("received", "Received", ICONS.inbox)}${navBtn("profile", "Profile", ICONS.user)}</nav>`;
+    <nav class="nav">${navBtn("home", "Home", ICONS.home)}${navBtn("documents", "Docs", ICONS.doc)}${navBtn("received", "Received", ICONS.inbox)}${navBtn("shares", "Shares", ICONS.share)}${navBtn("profile", "Profile", ICONS.user)}</nav>`;
   root.querySelectorAll(".nav button").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
   renderTab();
 }
@@ -197,6 +198,7 @@ function renderTab() {
   if (state.tab === "home") return renderHome(s);
   if (state.tab === "documents") return renderDocs(s);
   if (state.tab === "received") return renderReceived(s);
+  if (state.tab === "shares") return renderShares(s);
   if (state.tab === "profile") return renderProfile(s);
 }
 function skeletons(n = 4) { return Array.from({ length: n }, () => `<div class="sk-card"><div class="sk a"></div><div class="b"><div class="sk l1"></div><div class="sk l2"></div></div></div>`).join(""); }
@@ -229,6 +231,43 @@ async function renderReceived(s) {
   try { await loadReceived(); } catch (e) { return errBox(s, e); }
   s.innerHTML = state.received.length ? state.received.map((d, i) => docCard(d, "received", i)).join("") : emptyBox("No shared documents", "When someone issues or shares a document to you, it lands here.");
   bindCards(s);
+}
+async function renderShares(s) {
+  s.innerHTML = skeletons();
+  let shares;
+  try { shares = await apiGet("/shares/mine"); } catch (e) { return errBox(s, e); }
+  if (!shares.length) return void (s.innerHTML = emptyBox("No shares yet", "Links you create from a received document appear here — revoke access anytime."));
+  s.innerHTML = shares.map((sh, i) => shareRow(sh, i)).join("");
+  s.querySelectorAll("[data-revoke]").forEach((b) => b.addEventListener("click", () => revokeShare(b.dataset.revoke)));
+}
+function shareState(sh) {
+  if (sh.revoked) return { chip: `<span class="chip bad">Revoked</span>`, active: false };
+  if (sh.expiresAt && new Date(sh.expiresAt) < new Date()) return { chip: `<span class="chip warn">Expired</span>`, active: false };
+  return { chip: `<span class="chip ok">Active</span>`, active: true };
+}
+function shareRow(sh, i) {
+  const c = docColor(sh.docType);
+  const st = shareState(sh);
+  const to = sh.audience === "user" ? (sh.recipientEmail || sh.recipientWallet || "a user") : "Anyone with the link";
+  return `
+    <div class="doc-card" style="animation-delay:${Math.min(i, 8) * 45}ms">
+      <div class="doc-ic" style="background:${c.bg};color:${c.fg}">${ICONS.share}</div>
+      <div class="doc-meta">
+        <div class="t">${esc(sh.docType || "Document")} ${sh.docNumber ? "· " + esc(sh.docNumber) : ""}</div>
+        <div class="s">${st.chip} <span>${esc(to)}</span> ${sh.expiresAt ? "· exp " + esc(fmtDate(sh.expiresAt)) : ""}</div>
+      </div>
+      <div class="doc-actions">
+        ${st.active ? `<button class="icon-btn" data-revoke="${esc(sh.shareId)}" aria-label="Revoke share" style="color:var(--red)">${ICONS.trash}</button>` : ""}
+      </div>
+    </div>`;
+}
+async function revokeShare(shareId) {
+  if (!confirm("Revoke this share? The link stops working immediately and can't be undone.")) return;
+  toast("Revoking…");
+  const r = await apiPost("/shares/" + encodeURIComponent(shareId) + "/revoke");
+  if (!r.ok) return toast(r.data.message || "Could not revoke", true);
+  toast("Share revoked ✓");
+  renderShares(document.getElementById("screen"));
 }
 function renderProfile(s) {
   const u = state.user || {};

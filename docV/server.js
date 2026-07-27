@@ -2268,10 +2268,16 @@ app.post("/api/shares/:shareId/revoke", async (req, res) => {
         const share = await DocumentShare.findOne({ shareId: req.params.shareId });
         if (!share) return res.status(404).json({ message: "Share not found." });
 
-        const doc = await IssuedDocument.findOne({ docId: share.docId });
-        if (!doc) return res.status(404).json({ message: "Document not found." });
-        const auth = await authorizeDocOwner(req, doc);
-        if (!auth.ok) return res.status(403).json({ message: "Only the owner can revoke this share." });
+        // The user who created the share can always revoke it (session identity);
+        // otherwise fall back to proving ownership of the underlying document.
+        const isCreator = req.session?.userId && share.ownerUserId &&
+            String(share.ownerUserId) === String(req.session.userId);
+        if (!isCreator) {
+            const doc = await IssuedDocument.findOne({ docId: share.docId });
+            if (!doc) return res.status(404).json({ message: "Document not found." });
+            const auth = await authorizeDocOwner(req, doc);
+            if (!auth.ok) return res.status(403).json({ message: "Only the owner can revoke this share." });
+        }
 
         const cid = share.shareCID;
         share.revoked = true;
@@ -2349,6 +2355,33 @@ app.get("/api/shares/received", isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error("Shared-with-me error:", error.message);
         res.status(500).json({ message: "Failed to load shared documents." });
+    }
+});
+
+// --- "My shares": every share the logged-in user created (any document). ---
+app.get("/api/shares/mine", isAuthenticated, async (req, res) => {
+    try {
+        const user = await User.findById(req.session.userId).select("walletAddress");
+        const or = [{ ownerUserId: req.session.userId }];
+        if (user?.walletAddress) or.push({ ownerWallet: web3.utils.toChecksumAddress(user.walletAddress) });
+        const shares = await DocumentShare.find({ $or: or }).sort({ createdAt: -1 });
+        res.json(shares.map(s => ({
+            shareId: s.shareId,
+            docType: s.docType,
+            docNumber: s.docNumber,
+            audience: s.audience,
+            gate: s.gate,
+            recipientEmail: s.recipientEmail,
+            recipientWallet: s.recipientWallet,
+            expiresAt: s.expiresAt,
+            revoked: s.revoked,
+            viewCount: s.viewCount,
+            maxViews: s.maxViews,
+            createdAt: s.createdAt,
+        })));
+    } catch (error) {
+        console.error("My shares error:", error.message);
+        res.status(500).json({ message: "Failed to load your shares." });
     }
 });
 
