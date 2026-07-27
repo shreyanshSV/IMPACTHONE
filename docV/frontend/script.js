@@ -788,6 +788,16 @@ async function handleSignup(e) {
         return;
     }
 
+    // MetaMask wallet is mandatory — connect and prove ownership before signup.
+    let wallet;
+    try {
+        wallet = await Wallet.authenticate(true);
+    } catch (err) {
+        showAuthError(err.message || 'Connect your MetaMask wallet to sign up.');
+        toggleLoading(false);
+        return;
+    }
+
     // Construct full phone number
     const countryCode = document.getElementById('country-code').value;
     const phoneNumber = formData.get('phone');
@@ -797,7 +807,9 @@ async function handleSignup(e) {
         fullName: formData.get('fullName'),
         email: formData.get('email'),
         phone: fullPhone,
-        password: password
+        password: password,
+        walletAddress: wallet.walletAddress,
+        signature: wallet.signature
     };
 
     try {
@@ -873,6 +885,45 @@ async function handleSignin(e) {
         showAuthError('Connection error. Please try again.');
     } finally {
         toggleLoading(false);
+    }
+}
+
+/**
+ * Sign in with MetaMask: connect the wallet, sign a server nonce, and log in
+ * the account linked to that wallet.
+ */
+async function handleSigninWallet() {
+    const btn = document.getElementById('signin-metamask-btn');
+    const original = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Connecting…'; }
+    toggleLoading(true);
+    try {
+        const wallet = await Wallet.authenticate(true);
+        const response = await fetch(`${API_BASE_URL}/auth/signin-wallet`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(wallet),
+            credentials: 'include'
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Wallet sign-in failed');
+
+        currentUser = data.user;
+        try {
+            const profileResp = await fetch(`${API_BASE_URL}/profile`, { credentials: 'include' });
+            if (profileResp.ok) currentUser = await profileResp.json();
+        } catch (_) { /* fall back to minimal user */ }
+
+        showToast(`Welcome back, ${currentUser.fullName || ''}!`, 'success');
+        showPage('dashboard');
+        showDashboardSection('home');
+        updateUserInterface();
+        reconnectLinkedWallet();
+    } catch (error) {
+        showAuthError(error.message || 'Wallet sign-in failed');
+    } finally {
+        toggleLoading(false);
+        if (btn) { btn.disabled = false; btn.innerHTML = original; }
     }
 }
 
@@ -3028,7 +3079,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (signinForm) {
         signinForm.addEventListener('submit', handleSignin);
     }
-    
+
+    const signinMetaMaskBtn = document.getElementById('signin-metamask-btn');
+    if (signinMetaMaskBtn) {
+        signinMetaMaskBtn.addEventListener('click', handleSigninWallet);
+    }
+
     if (signupForm) {
         signupForm.addEventListener('submit', handleSignup);
         // Add password strength listener

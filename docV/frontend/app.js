@@ -49,6 +49,7 @@ const ICONS = {
   shield: S(`<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>`),
   idcard: S(`<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h4M6 15c.5-1.5 4.5-1.5 5 0"/>`),
   cert: S(`<circle cx="12" cy="9" r="5"/><path d="M9 13l-1 8 4-2 4 2-1-8"/>`),
+  wallet: S(`<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.3"/>`),
 };
 const logoBadge = (cls) => `<span class="${cls}"><img src="/icon.svg" alt="" /></span>`;
 
@@ -83,8 +84,11 @@ function renderAuth(mode = "signin") {
     f.innerHTML = `
       <div class="field"><label>Email</label><input id="si-email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" /></div>
       <div class="field"><label>Password</label><input id="si-pass" type="password" autocomplete="current-password" placeholder="Your password" /></div>
-      <button class="btn" id="si-btn">Sign In</button>`;
+      <button class="btn" id="si-btn">Sign In</button>
+      <div class="or">or</div>
+      <button class="btn btn-ghost" id="si-mm">${ICONS.wallet} Sign in with MetaMask</button>`;
     f.querySelector("#si-btn").addEventListener("click", doSignin);
+    f.querySelector("#si-mm").addEventListener("click", doSigninWallet);
   } else {
     f.innerHTML = `
       <div class="field"><label>Full name</label><input id="su-name" placeholder="Your name" /></div>
@@ -116,7 +120,7 @@ function renderAuth(mode = "signin") {
       const otp = f.querySelector("#su-otp").value.trim();
       const r = await apiPost("/auth/verify-email-otp", { email, otp });
       if (!r.ok) return toast(r.data.message || "Invalid code", true);
-      verified.done = true; btn.disabled = false; btn.textContent = "Create Account";
+      verified.done = true; btn.disabled = false; btn.textContent = "Connect MetaMask & Create Account";
       toast("Email verified ✓");
     });
     btn.addEventListener("click", () => doSignup(verified));
@@ -141,10 +145,27 @@ async function doSignup(verified) {
   const password = root.querySelector("#su-pass").value;
   if (!fullName || !email || !password) return toast("Fill all fields", true);
   const btn = root.querySelector("#su-btn");
-  btn.disabled = true; btn.textContent = "Creating…";
-  const r = await apiPost("/auth/signup", { fullName, email, password, phone });
-  if (!r.ok) { btn.disabled = false; btn.textContent = "Create Account"; return toast(r.data.message || "Sign up failed", true); }
+  const reset = () => { btn.disabled = false; btn.textContent = "Connect MetaMask & Create Account"; };
+  btn.disabled = true; btn.textContent = "Connecting wallet…";
+  let wallet;
+  try { wallet = await Wallet.authenticate(true); }
+  catch (e) { reset(); return toast(e.message || "Wallet connection failed", true); }
+  btn.textContent = "Creating account…";
+  const r = await apiPost("/auth/signup", { fullName, email, password, phone, walletAddress: wallet.walletAddress, signature: wallet.signature });
+  if (!r.ok) { reset(); return toast(r.data.message || "Sign up failed", true); }
   boot();
+}
+
+async function doSigninWallet() {
+  const btn = root.querySelector("#si-mm");
+  const label = btn.innerHTML;
+  btn.disabled = true; btn.textContent = "Connecting…";
+  try {
+    const wallet = await Wallet.authenticate(true);
+    const r = await apiPost("/auth/signin-wallet", wallet);
+    if (!r.ok) throw new Error(r.data.message || "Wallet sign-in failed");
+    boot();
+  } catch (e) { btn.disabled = false; btn.innerHTML = label; toast(e.message || "Wallet sign-in failed", true); }
 }
 
 /* ============================================================

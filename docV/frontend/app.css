@@ -160,3 +160,10 @@ a { color: var(--primary); }
 .toast { position: fixed; left: 50%; bottom: calc(var(--nav-h) + 20px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(16px); background: var(--slate); color: #fff; padding: 13px 20px; border-radius: 13px; font-size: 14px; font-weight: 500; z-index: 100; opacity: 0; pointer-events: none; transition: all 0.25s var(--ease); max-width: 88%; text-align: center; box-shadow: var(--shadow-lg); }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.err { background: var(--red); }
+
+/* icon buttons + "or" divider (wallet auth) */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn svg { width: 18px; height: 18px; }
+.or { text-align: center; color: var(--faint); font-size: 12px; margin: 15px 0; position: relative; }
+.or::before, .or::after { content: ""; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border); }
+.or::before { left: 0; } .or::after { right: 0; }

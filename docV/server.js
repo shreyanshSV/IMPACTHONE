@@ -335,6 +335,16 @@ const otpSchema = new mongoose.Schema({
 });
 const OTP = mongoose.model("OTP", otpSchema);
 
+// Short-lived challenge for wallet authentication (sign-up + sign-in). The user
+// signs a message containing this nonce with MetaMask; we verify the signature
+// recovers to their address. One-time use, expires in 5 minutes.
+const walletNonceSchema = new mongoose.Schema({
+    walletAddress: { type: String, required: true },
+    nonce: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now, expires: 300 },
+});
+const WalletNonce = mongoose.model("WalletNonce", walletNonceSchema);
+
 // --- ISSUER PORTAL: Published documents (issuer -> receiver) ---
 // Off-chain mirror of the on-chain DocVerifyRegistry record. The blockchain
 // (deployed via Remix) holds the immutable proof; this mirror enables fast
@@ -500,11 +510,54 @@ app.post("/api/auth/verify-email-otp", authLimiter, async (req, res) => {
         res.status(500).json({ message: "Verification failed" });
     }
 });
-app.post("/api/auth/signup", authLimiter, async (req, res) => {
-    const { fullName, email, password, phone } = req.body;
+// Issue a one-time nonce + the exact message the wallet should sign.
+app.post("/api/auth/wallet-nonce", authLimiter, async (req, res) => {
     try {
+        const { walletAddress } = req.body;
+        if (!walletAddress || !web3.utils.isAddress(walletAddress)) {
+            return res.status(400).json({ message: "A valid wallet address is required." });
+        }
+        const addr = web3.utils.toChecksumAddress(walletAddress);
+        const nonce = web3.utils.randomHex(16);
+        await WalletNonce.deleteMany({ walletAddress: addr });
+        await WalletNonce.create({ walletAddress: addr, nonce });
+        res.json({ nonce, message: walletAuthMessage(addr, nonce) });
+    } catch (error) {
+        console.error("wallet-nonce error:", error.message);
+        res.status(500).json({ message: "Could not start wallet verification." });
+    }
+});
+
+// Sign in with MetaMask: verify the signed nonce, then log in the matching user.
+app.post("/api/auth/signin-wallet", authLimiter, async (req, res) => {
+    try {
+        const { walletAddress, signature } = req.body;
+        const addr = await consumeWalletAuth(walletAddress, signature);
+        if (!addr) return res.status(401).json({ message: "Wallet verification failed. Please try again." });
+        const user = await User.findOne({ walletAddress: addr });
+        if (!user) return res.status(404).json({ message: "No account is linked to this wallet. Please sign up first." });
+        req.session.userId = user._id;
+        res.json({ message: "Signed in successfully!", user: { fullName: user.fullName } });
+    } catch (error) {
+        console.error("signin-wallet error:", error.message);
+        res.status(500).json({ message: "Internal server error." });
+    }
+});
+
+app.post("/api/auth/signup", authLimiter, async (req, res) => {
+    const { fullName, email, password, phone, walletAddress, signature } = req.body;
+    try {
+        // MetaMask wallet is mandatory: prove ownership before creating the account.
+        const addr = await consumeWalletAuth(walletAddress, signature);
+        if (!addr) {
+            return res.status(400).json({ message: "Please connect and verify your MetaMask wallet to sign up." });
+        }
+        if (await User.findOne({ walletAddress: addr })) {
+            return res.status(400).json({ message: "This wallet is already linked to an account." });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ fullName, email, password: hashedPassword, phone });
+        const user = new User({ fullName, email, password: hashedPassword, phone, walletAddress: addr });
         await user.save();
 
         req.session.userId = user._id;
@@ -513,7 +566,7 @@ app.post("/api/auth/signup", authLimiter, async (req, res) => {
         res.status(201).json({ message: "Account created successfully!" });
     } catch (error) {
         console.error("Error during sign-up:", error.message);
-        res.status(400).json({ message: "Email already in use or invalid data." });
+        res.status(400).json({ message: "Email or wallet already in use, or invalid data." });
     }
 });
 
@@ -1223,6 +1276,25 @@ async function verifyWalletSignature(walletAddress, signature, message) {
         console.error("Issuer signature verification failed:", err.message || err);
         return null;
     }
+}
+
+// The exact message the client signs for wallet auth. Must be reproduced
+// byte-for-byte on both sides, so it's derived only from the address + nonce.
+function walletAuthMessage(address, nonce) {
+    return `DocuChain wants you to sign in with your wallet.\n\nAddress: ${address}\nNonce: ${nonce}`;
+}
+
+// Verify a wallet-auth attempt: look up the one-time nonce for this address,
+// confirm the signature recovers to it, and consume the nonce. Returns the
+// checksummed address on success, else null.
+async function consumeWalletAuth(walletAddress, signature) {
+    if (!walletAddress || !web3.utils.isAddress(walletAddress)) return null;
+    const addr = web3.utils.toChecksumAddress(walletAddress);
+    const rec = await WalletNonce.findOne({ walletAddress: addr });
+    if (!rec) return null;
+    await WalletNonce.deleteOne({ _id: rec._id }); // one-time, even on failure
+    const signer = await verifyWalletSignature(addr, signature, walletAuthMessage(addr, rec.nonce));
+    return signer === addr ? addr : null;
 }
 
 // --- Upload the original file to IPFS (issuer-authenticated) ---
